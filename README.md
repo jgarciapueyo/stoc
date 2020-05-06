@@ -27,7 +27,9 @@ cd stoc
 ```
 2. Build the compiler
 ```sh
-cmake .
+mkdir build
+cd build
+cmake ..
 make
 ```
 3. Run the compiler

@@ -24,12 +24,14 @@ You will need to install [docker](https://docs.docker.com/get-docker/).
     to learn more.
     - Already inside the container, check that you are in the directory: `/stoc`. Then, build the compiler.
     ```sh
-    cmake .
+    mkdir build
+    cd build
+    cmake ..
     make
     ```
     - Run the compiler
     ```sh
-    ./stoc <file.st>
+    ./src/stoc <file.st>
     ```
   
 - For the development of `stoc`, it has been used the [Clion IDE](https://www.jetbrains.com/clion/) using docker containers
