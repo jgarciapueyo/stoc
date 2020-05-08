@@ -1,4 +1,13 @@
-#include "Scanner.h"
+//===- stoc/Scanner/Scanner.cpp - Implementation of Scanner class --------*- C++ -*-===//
+//
+//===-------------------------------------------------------------------------------===//
+//
+// This file implements the Scanner class.
+//
+//===-------------------------------------------------------------------------------===//
+
+
+#include "stoc/Scanner/Scanner.h"
 
 #include <iostream>
 #include <utility>
@@ -9,14 +18,14 @@ Scanner::Scanner(std::shared_ptr<SrcFile> file) : file(std::move(file)), tokens(
   this->line = 1;
 }
 
-std::vector<Token> Scanner::scan() {
-  while(!isAtEnd()) {
+void Scanner::scan() {
+  while (!isAtEnd()) {
     scanNextToken();
   }
 
-  updateStart();
+  updateStart(); // needed to correctly add T_EOF
   tokens.push_back(makeToken(T_EOF));
-  return tokens;
+  this->file->setTokens(this->tokens);
 }
 
 bool Scanner::isDigit(char c) { return '0' <= c && c <= '9'; }
@@ -27,45 +36,86 @@ bool Scanner::isAlpha(char c) {
 
 bool Scanner::isAlphaNum(char c) { return isDigit(c) || isAlpha(c); }
 
-bool Scanner::isAtEnd() const { return this->current >= this->file->get_length(); }
+void Scanner::reportError(std::string msg) {
+  std::cerr << "<" << this->file->getFilename() << ":l." << this->line << ">"
+            << " error: " << this->file->getData().at(this->start) << " " << msg << std::endl;
+
+  this->file->setErrorInScanning(true);
+}
+
+void Scanner::updateStart() { this->start = this->current; }
+
+bool Scanner::isAtEnd() const { return this->current >= this->file->getLength(); }
 
 char Scanner::peek() const {
-  if (isAtEnd()) { return '\0'; }
-  return this->file->get_data().at(current);
+  if (isAtEnd()) {
+    return '\0';
+  } else {
+    return this->file->getData().at(current);
+  }
 }
 
 char Scanner::peekNext() const {
-  if (this->current >= this->file->get_length() - 1)
+  if (this->current >= this->file->getLength() - 1) {
     return '\0';
-  return this->file->get_data().at(current + 1);
+  } else {
+    return this->file->getData().at(current + 1);
+  }
 }
 
 char Scanner::advance() {
-  if (isAtEnd())
+  if (isAtEnd()) {
     return '\0';
-
-  this->current++;
-  return this->file->get_data().at(current - 1);
+  } else {
+    this->current++;
+    return this->file->getData().at(current - 1);
+  }
 }
 
 TokenType Scanner::tokenType() {
-  std::string identifier = this->file->get_data().substr(start, current - start);
-  if(identifier == "var") { return VAR;}
-  else if(identifier == "const") { return CONST; }
-  else if(identifier == "if") { return IF; }
-  else if(identifier == "else") { return ELSE; }
-  else if(identifier == "for") { return FOR; }
-  else if(identifier == "while") { return WHILE; }
-  else if(identifier == "func") { return FUNC; }
-  else if(identifier == "return") { return RETURN; }
-  else if(identifier == "bool") { return BOOL; }
-  else if(identifier == "int") { return INT; }
-  else if(identifier == "float") { return FLOAT; }
-  else if(identifier == "string") { return STRING; }
-  else if(identifier == "true") { return LIT_TRUE; }
-  else if(identifier == "false") { return LIT_FALSE; }
-  else if(identifier == "nil") { return LIT_NIL; }
-  else { return IDENTIFIER; }
+  std::string identifier = this->file->getData().substr(start, current - start);
+  if (identifier == "var") {
+    return VAR;
+  } else if (identifier == "const") {
+    return CONST;
+  } else if (identifier == "if") {
+    return IF;
+  } else if (identifier == "else") {
+    return ELSE;
+  } else if (identifier == "for") {
+    return FOR;
+  } else if (identifier == "while") {
+    return WHILE;
+  } else if (identifier == "func") {
+    return FUNC;
+  } else if (identifier == "return") {
+    return RETURN;
+  } else if (identifier == "bool") {
+    return BOOL;
+  } else if (identifier == "int") {
+    return INT;
+  } else if (identifier == "float") {
+    return FLOAT;
+  } else if (identifier == "string") {
+    return STRING;
+  } else if (identifier == "true") {
+    return LIT_TRUE;
+  } else if (identifier == "false") {
+    return LIT_FALSE;
+  } else if (identifier == "nil") {
+    return LIT_NIL;
+  } else {
+    return IDENTIFIER;
+  }
+}
+
+Token Scanner::makeToken(TokenType type) const {
+  return Token(type, this->start, this->line, this->file->getData().substr(start, current - start));
+}
+
+Token Scanner::makeErrorToken(std::string errorMsg = "") {
+  reportError(errorMsg);
+  return Token(ILLEGAL, this->start, this->line, std::move(errorMsg));
 }
 
 void Scanner::skipWhiteSpaces() {
@@ -77,7 +127,7 @@ void Scanner::skipWhiteSpaces() {
       advance();
       break;
     case '\n':
-      this->line++;
+      this->line++; // keep track of the line where \current is
       advance();
       break;
     default:
@@ -86,19 +136,8 @@ void Scanner::skipWhiteSpaces() {
   }
 }
 
-void Scanner::updateStart() { this->start = this->current; }
-
-Token Scanner::makeToken(TokenType type) const {
-  return Token(type, this->start, this->line,
-               this->file->get_data().substr(start, current - start));
-}
-
-Token Scanner::makeErrorToken(std::string errorMsg = "") const {
-  return Token(ILLEGAL, this->start, this->line, std::move(errorMsg));
-}
-
-// TODO: support numbers as 1_000_000 with _
 void Scanner::scanNumber() {
+  // TODO: support numbers as 1_000_000 with underscore _
   // integer part
   while (isDigit(peek())) {
     advance();
@@ -118,42 +157,44 @@ void Scanner::scanNumber() {
 }
 
 void Scanner::scanIdentifier() {
-  // we know first character is alpha
-  while(isAlphaNum(peek())) {
+  // we know first character is alpha from scanNextToken
+  while (isAlphaNum(peek())) {
     advance();
   }
 
-  // we know the string of the identifier, check if it is a keyword
-  TokenType type = tokenType();
+  TokenType type = tokenType(); // check if the string is a keyword
   tokens.push_back(makeToken(type));
 }
 
 void Scanner::scanLineComment() {
-  // The first characters '//' have been treated
-  while(peek() != '\n' && !isAtEnd()) {
+  // The first characters '//' defining the comment have been treated
+  while (peek() != '\n' && !isAtEnd()) {
     advance();
   }
 
-  if(isAtEnd()) return;
+  if (isAtEnd())
+    return;
   else {
     this->line++;
-    // advance after end of line
+    // advance after end of line character
     advance();
   }
 }
 
-// TODO: improve string recognition with escape sequences
 void Scanner::scanString() {
+  // TODO: improve string recognition with escape sequences
   // Multi line strings are supported
-  while(peek() != '"' && !isAtEnd()) {
-    if(peek() == '\n') { this->line++; }
+  // first quotes defining the string have been treated
+  while (peek() != '"' && !isAtEnd()) {
+    if (peek() == '\n') {
+      this->line++;
+    }
     advance();
   }
 
-  if(isAtEnd()) {
-    tokens.push_back(makeErrorToken("missing \" character"));
-  }
-  else {
+  if (isAtEnd()) {
+    tokens.push_back(makeErrorToken("missing \" character for defining strings"));
+  } else {
     tokens.push_back(makeToken(LIT_STRING));
   }
 }
@@ -165,11 +206,9 @@ void Scanner::scanNextToken() {
   char c = peek();
   if (isDigit(c)) {
     scanNumber();
-  }
-  else if(isAlpha(c)) {
+  } else if (isAlpha(c)) { // identifiers must start with alphabet character
     scanIdentifier();
-  }
-  else {
+  } else {
     advance(); // make progress
     switch (c) {
     case '+':
@@ -194,7 +233,8 @@ void Scanner::scanNextToken() {
         advance();
         tokens.push_back(makeToken(LAND));
       } else {
-        tokens.push_back(makeErrorToken());
+        tokens.push_back(makeErrorToken("Operand Bit And not supported yet"));
+        advance();
       }
       break;
     case '|':
@@ -202,11 +242,17 @@ void Scanner::scanNextToken() {
         advance();
         tokens.push_back(makeToken(LOR));
       } else {
-        tokens.push_back(makeErrorToken());
+        tokens.push_back(makeErrorToken("Operand Bit Or not supported yet"));
+        advance();
       }
       break;
     case '!':
-      tokens.push_back(makeToken(NOT));
+      if (peek() == '=') {
+        advance();
+        tokens.push_back(makeToken(NOT_EQUAL));
+      } else {
+        tokens.push_back(makeToken(NOT));
+      }
       break;
     case '=':
       if (peek() == '=') {
@@ -251,7 +297,8 @@ void Scanner::scanNextToken() {
       scanString();
       break;
     default:
-      tokens.push_back(makeErrorToken());
+      tokens.push_back(makeErrorToken("Unrecognized token"));
+      advance(); // if character not recognized it is represented by two characters \xxx\xxx
       break;
     }
   }

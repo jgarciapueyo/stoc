@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.13)
 # Project Name
 project(stoc)
 
+set(CMAKE_CXX_STANDARD 17)
+
 # include
 find_package(LLVM REQUIRED CONFIG)
 
@@ -14,6 +16,9 @@ add_definitions(${LLVM_DEFINITIONS})
 
 # Third-Party Libraries
 add_subdirectory(libs/cxxopts)
+
+# Header files
+include_directories(include)
 
 # Executable code is here
 add_subdirectory(src)

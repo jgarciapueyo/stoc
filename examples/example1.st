@@ -8,4 +8,5 @@ func factorial(int n) {
 
 func main() {
   var int i = 1;
+  var int res = factorial(i);
 }
