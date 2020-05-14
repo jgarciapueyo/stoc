@@ -5,6 +5,8 @@ add_executable(stoc main.cpp
         Scanner/Token.cpp
         Parser/Parser.cpp
         AST/ASTPrinter.cpp
-        AST/Expr.cpp)
+        AST/Expr.cpp
+        AST/Decl.cpp
+        AST/Stmt.cpp)
 
 

@@ -37,6 +37,7 @@ enum TokenType {
   LBRACE,    // {
   RBRACE,    // }
   SEMICOLON, // ;
+  COMMA,
 
   // Keywords
   VAR,   //
@@ -86,6 +87,8 @@ enum Prec {
 /// returns the precedence of \param type (as a binary operator)
 int tokenPrec(TokenType type);
 
+std::string typeAsString(TokenType type);
+
 std::ostream &operator<<(std::ostream &os, TokenType type);
 
 /// Representation of a token.
@@ -96,8 +99,14 @@ public:
 
   Token(TokenType type, int begin, int line);
 
+  Token();
+
+  std::string getTypeAsString() const;
+
 public:
   TokenType type;
+
+  // TODO: change to column (and change also scanner)
 
   /// position where the token starts in the raw source code
   int begin;

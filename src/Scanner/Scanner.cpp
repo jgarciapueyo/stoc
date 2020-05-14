@@ -293,6 +293,9 @@ void Scanner::scanNextToken() {
     case ';':
       tokens.push_back(makeToken(SEMICOLON));
       break;
+    case ',':
+      tokens.push_back(makeToken(COMMA));
+      break;
     case '"':
       scanString();
       break;

@@ -12,7 +12,9 @@
 #define STOC_PARSER_H
 
 #include "stoc/AST/BasicNode.h"
+#include "stoc/AST/Decl.h"
 #include "stoc/AST/Expr.h"
+#include "stoc/AST/Stmt.h"
 #include "stoc/Scanner/Token.h"
 #include "stoc/SrcFile/SrcFile.h"
 
@@ -61,7 +63,37 @@ private:
   ///    if its type is not equal to \type, it reports an \error_msg
   Token consume(TokenType type, std::string error_msg);
 
+  Token parseType();
+
+  std::vector<std::shared_ptr<ParamDecl>> parseParameters();
+
+  Token parseReturnType();
+
+  std::vector<std::shared_ptr<Expr>> parseArgs();
+
+  std::shared_ptr<Expr> parseOperand();
+
   // Main parsing methods
+
+  std::shared_ptr<Stmt> parseStmt();
+
+  std::shared_ptr<Stmt> parseSimpleStmt(bool semicolonExp);
+
+  std::shared_ptr<Stmt> parseBlockStmt();
+
+  std::shared_ptr<Stmt> parseIfStmt();
+
+  std::shared_ptr<Stmt> parseForStmt();
+
+  std::shared_ptr<Stmt> parseWhileStmt();
+
+  std::shared_ptr<Stmt> parseReturnStmt();
+
+  std::shared_ptr<Decl> parseDecl();
+
+  std::shared_ptr<Decl> parseVarConstDecl();
+
+  std::shared_ptr<Decl> parseFuncDecl();
 
   /// parses any type of expression
   std::shared_ptr<Expr> parseExpr();

@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(opt["scanning"].as<bool>()) {
-      for(auto token : src->getTokens()) {
+      for(const auto& token : src->getTokens()) {
         std::cout << token << std::endl;
       }
     }
@@ -68,7 +68,9 @@ int main(int argc, char *argv[]) {
 
     if(opt["ast-dump"].as<bool>()) {
       ASTPrinter printer;
-      printer.print(src->getAst()[0]);
+      for(const auto &node : src->getAst()) {
+        printer.print(node);
+      }
     }
   }
   catch(std::exception& e) {

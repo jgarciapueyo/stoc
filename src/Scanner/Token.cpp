@@ -12,7 +12,7 @@
 #include <iostream>
 #include <vector>
 
-std::ostream &operator<<(std::ostream &os, TokenType type) {
+std::string typeAsString(TokenType type) {
   static std::vector<std::string> stringRepresentation = {
       "ADD",        "SUB",     "STAR",       "SLASH",    "LAND",      "LOR",        "NOT",
       "ASSIGN",     "EQUAL",   "NOT_EQUAL",  "LESS",     "GREATER",   "LESS_EQUAL", "GREATER_EQUAL",
@@ -21,7 +21,11 @@ std::ostream &operator<<(std::ostream &os, TokenType type) {
       "INT",        "FLOAT",   "STRING",     "LIT_TRUE", "LIT_FALSE", "LIT_INT",    "LIT_FLOAT",
       "LIT_STRING", "LIT_NIL", "IDENTIFIER", "ILLEGAL",  "T_EOF"};
 
-  os << stringRepresentation[type];
+  return stringRepresentation[type];
+}
+
+std::ostream &operator<<(std::ostream &os, TokenType type) {
+  os << typeAsString(type);
   return os;
 }
 
@@ -53,6 +57,12 @@ Token::Token(TokenType type, int begin, int line, std::string value)
     : type(type), begin(begin), line(line), value(value) {}
 
 Token::Token(TokenType type, int begin, int line) : type(type), begin(begin), line(line) {}
+
+Token::Token() {}
+
+std::string Token::getTypeAsString() const {
+  return typeAsString(this->type);
+}
 
 std::ostream &operator<<(std::ostream &os, const Token t) {
   os << std::setw(5) << t.line << " " << std::setw(4) << t.begin << " " << std::setw(10) << t.value

@@ -29,9 +29,23 @@ public:
   void print(const std::shared_ptr<BasicNode>& ast);
 
   // Visitor Pattern methods
-  void visit(ExprBinary node) override;
-  void visit(ExprUnary node) override;
-  void visit(ExprLiteral node) override;
+  void visit(BinaryExpr node) override;
+  void visit(UnaryExpr node) override;
+  void visit(LiteralExpr node) override;
+  void visit(IdentExpr node) override;
+  void visit(CallExpr node) override;
+  void visit(VarDecl node) override;
+  void visit(ConstDecl node) override;
+  void visit(ParamDecl node) override;
+  void visit(FuncDecl node) override;
+  void visit(ExpressionStmt node) override;
+  void visit(DeclarationStmt node) override;
+  void visit(BlockStmt node) override;
+  void visit(IfStmt node) override;
+  void visit(ForStmt node) override;
+  void visit(WhileStmt node) override;
+  void visit(AssignmenStmt node) override;
+  void visit(ReturnStmt node) override;
 };
 
 #endif // STOC_ASTPRINTER_H

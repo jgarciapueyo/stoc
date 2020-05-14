@@ -1,4 +1,4 @@
-func factorial(int n) {
+func factorial(var int n) int {
   if(n == 0 || n == 1) {
     return 1;
   } else {
