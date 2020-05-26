@@ -34,14 +34,15 @@ void LiteralExpr::accept(ASTVisitor *visitor) { visitor->visit(*this); }
 const Token &LiteralExpr::getToken() const { return token; }
 
 // Identifier Expression node
-IdentExpr::IdentExpr(Token ident, std::string name) : ident(ident), name(name) {}
+IdentExpr::IdentExpr(Token ident) : ident(ident) {}
 
 void IdentExpr::accept(ASTVisitor *visitor) { visitor->visit(*this); }
+
 const Token &IdentExpr::getIdent() const { return ident; }
-const std::string &IdentExpr::getName() const { return name; }
+const std::string &IdentExpr::getName() const { return ident.value; }
 
 // Call Expression node
-CallExpr::CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr> > args)
+CallExpr::CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr>> args)
     : func(func), args(args) {}
 
 void CallExpr::accept(ASTVisitor *visitor) { visitor->visit(*this); }

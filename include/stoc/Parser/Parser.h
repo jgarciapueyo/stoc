@@ -33,7 +33,7 @@ private:
   // numbers)
   int current; /// current token being analyzed
 
-  // Helper methods
+  // HELPER METHODS
 
   /// prints the error \error_msg
   void reportError(std::string error_msg);
@@ -63,37 +63,58 @@ private:
   ///    if its type is not equal to \type, it reports an \error_msg
   Token consume(TokenType type, std::string error_msg);
 
+  /// parses the type of a declaration
   Token parseType();
 
+  /// parses the parameters of a function
   std::vector<std::shared_ptr<ParamDecl>> parseParameters();
 
+  /// parses the return type of a function
   Token parseReturnType();
 
+  /// parses the arguments of a call expression
   std::vector<std::shared_ptr<Expr>> parseArgs();
 
+  /// parses an operand in an expression
   std::shared_ptr<Expr> parseOperand();
 
-  // Main parsing methods
+  // MAIN PARSING METHODS
 
-  std::shared_ptr<Stmt> parseStmt();
+  //------- Declarations -------
 
-  std::shared_ptr<Stmt> parseSimpleStmt(bool semicolonExp);
-
-  std::shared_ptr<Stmt> parseBlockStmt();
-
-  std::shared_ptr<Stmt> parseIfStmt();
-
-  std::shared_ptr<Stmt> parseForStmt();
-
-  std::shared_ptr<Stmt> parseWhileStmt();
-
-  std::shared_ptr<Stmt> parseReturnStmt();
-
+  /// parses any type of declaration
   std::shared_ptr<Decl> parseDecl();
 
+  /// parses a variable or constant declaration
   std::shared_ptr<Decl> parseVarConstDecl();
 
+  /// parses a function declaration
   std::shared_ptr<Decl> parseFuncDecl();
+
+  //------- Statements -------
+
+  /// parses any type of statement
+  std::shared_ptr<Stmt> parseStmt();
+
+  /// parses a simple statement and a semicolon depending on \semicolonExp
+  std::shared_ptr<Stmt> parseSimpleStmt(bool semicolonExp);
+
+  /// parses a block statement
+  std::shared_ptr<Stmt> parseBlockStmt();
+
+  /// parses an if statement
+  std::shared_ptr<Stmt> parseIfStmt();
+
+  /// parses a for statement
+  std::shared_ptr<Stmt> parseForStmt();
+
+  /// parses a while statement
+  std::shared_ptr<Stmt> parseWhileStmt();
+
+  /// parses a return statement
+  std::shared_ptr<Stmt> parseReturnStmt();
+
+  //------- Expressions -------
 
   /// parses any type of expression
   std::shared_ptr<Expr> parseExpr();

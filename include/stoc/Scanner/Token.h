@@ -37,7 +37,7 @@ enum TokenType {
   LBRACE,    // {
   RBRACE,    // }
   SEMICOLON, // ;
-  COMMA,
+  COMMA,     // ,
 
   // Keywords
   VAR,   //
@@ -75,18 +75,19 @@ enum TokenType {
 /// e.g. A FACTOR (*, /) binds tighter than a TERM(+,/) so it has higher precedence
 /// Important: all equality and comparison have the same precedence (different from C precedence)
 enum Prec {
-  PREC_LOWEST,    // 0 (non operators)
-  PREC_OR,        // 1 Token: LOR
-  PREC_AND,       // 2 Token: LAND
-  PREC_EQUALITY,  // 3 Token: EQUAL, NOT_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL
-  PREC_TERM,      // 4 Token: ADD, SUB
-  PREC_FACTOR,    // 5 Token: STAR, SLASH
-  PREC_UNARY,     // 6 Token: NOT, unary SUB, unary ADD
+  PREC_LOWEST,   // 0 (non operators)
+  PREC_OR,       // 1 Token: LOR
+  PREC_AND,      // 2 Token: LAND
+  PREC_EQUALITY, // 3 Token: EQUAL, NOT_EQUAL, LESS, GREATER, LESS_EQUAL, GREATER_EQUAL
+  PREC_TERM,     // 4 Token: ADD, SUB
+  PREC_FACTOR,   // 5 Token: STAR, SLASH
+  PREC_UNARY,    // 6 Token: NOT, unary SUB, unary ADD
 };
 
 /// returns the precedence of \param type (as a binary operator)
 int tokenPrec(TokenType type);
 
+/// returns the type of the token \type as a string: e.g. EQUAL -> '==', LPAREN -> '('
 std::string typeAsString(TokenType type);
 
 std::ostream &operator<<(std::ostream &os, TokenType type);
@@ -95,24 +96,25 @@ std::ostream &operator<<(std::ostream &os, TokenType type);
 /// It contains a type and the string representing its value.
 class Token {
 public:
-  Token(TokenType type, int begin, int line, std::string value);
+  Token(TokenType type, int begin, int line, int column, std::string value);
 
-  Token(TokenType type, int begin, int line);
+  Token(TokenType type, int begin, int line, int column);
 
   Token();
 
-  std::string getTypeAsString() const;
+  [[nodiscard]] std::string getTypeAsString() const;
 
 public:
   TokenType type;
 
-  // TODO: change to column (and change also scanner)
-
   /// position where the token starts in the raw source code
-  int begin;
+  int begin{};
 
   /// line where the token is in the raw source code
-  int line;
+  int line{};
+
+  /// column of the line where the token starts in the raw source code
+  int column{};
 
   /// value of the token
   /// (e.g. for ADD is '+', for INT is 'int',
@@ -120,6 +122,6 @@ public:
   std::string value;
 };
 
-std::ostream &operator<<(std::ostream &os, const Token t);
+std::ostream &operator<<(std::ostream &os, const Token &t);
 
 #endif // STOC_TOKEN_H

@@ -1,13 +1,13 @@
-var int a = 2;
-
-func f(var int a, var float b) {
-    return ;
+func gcd(var int n, var int m) int {
+  if m == 0 {
+    return n;
+  }
+  else {
+    // Use n - m because there is no modulo operator
+    return gcd(m, n - m);
+  }
 }
 
-func main(var int a, var float b) int {
-    if a > 3 {
-        var int b = 3;
-    }
-
-    return 4;
+func main() {
+  var int GCD = gcd(10, 12);
 }

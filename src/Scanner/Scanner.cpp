@@ -6,7 +6,6 @@
 //
 //===-------------------------------------------------------------------------------===//
 
-
 #include "stoc/Scanner/Scanner.h"
 
 #include <iostream>
@@ -16,10 +15,13 @@ Scanner::Scanner(std::shared_ptr<SrcFile> file) : file(std::move(file)), tokens(
   this->start = 0;
   this->current = 0;
   this->line = 1;
+  this->column = 1;
 }
 
 void Scanner::scan() {
   while (!isAtEnd()) {
+    // TODO: make that scanNextToken returns the token and here do tokens.push_back(scanNextToken())
+    //   or directly this->file->tokens.push_back(scanNextToken) so it is more similar to the parser
     scanNextToken();
   }
 
@@ -36,7 +38,7 @@ bool Scanner::isAlpha(char c) {
 
 bool Scanner::isAlphaNum(char c) { return isDigit(c) || isAlpha(c); }
 
-void Scanner::reportError(std::string msg) {
+void Scanner::reportError(const std::string &msg) {
   std::cerr << "<" << this->file->getFilename() << ":l." << this->line << ">"
             << " error: " << this->file->getData().at(this->start) << " " << msg << std::endl;
 
@@ -68,6 +70,7 @@ char Scanner::advance() {
     return '\0';
   } else {
     this->current++;
+    this->column++;
     return this->file->getData().at(current - 1);
   }
 }
@@ -110,12 +113,15 @@ TokenType Scanner::tokenType() {
 }
 
 Token Scanner::makeToken(TokenType type) const {
-  return Token(type, this->start, this->line, this->file->getData().substr(start, current - start));
+  int columnStart = this->column - (this->current - this->start);
+  return Token(type, this->start, this->line, columnStart,
+               this->file->getData().substr(start, current - start));
 }
 
 Token Scanner::makeErrorToken(std::string errorMsg = "") {
   reportError(errorMsg);
-  return Token(ILLEGAL, this->start, this->line, std::move(errorMsg));
+  int columnStart = this->column - (this->current - this->start);
+  return Token(ILLEGAL, this->start, this->line, columnStart, std::move(errorMsg));
 }
 
 void Scanner::skipWhiteSpaces() {
@@ -127,7 +133,9 @@ void Scanner::skipWhiteSpaces() {
       advance();
       break;
     case '\n':
-      this->line++; // keep track of the line where \current is
+      this->line++;     // keep track of the line where \current is
+      this->column = 0; // keep track of the column where \current is
+                        // because advance will increase it
       advance();
       break;
     default:
@@ -176,6 +184,7 @@ void Scanner::scanLineComment() {
     return;
   else {
     this->line++;
+    this->column = 0;
     // advance after end of line character
     advance();
   }
@@ -188,6 +197,7 @@ void Scanner::scanString() {
   while (peek() != '"' && !isAtEnd()) {
     if (peek() == '\n') {
       this->line++;
+      this->column = 0;
     }
     advance();
   }

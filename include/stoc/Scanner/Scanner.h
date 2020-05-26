@@ -32,47 +32,48 @@ private:
   int current; /// current character being analyzed
 
   int line; /// line of source code where \current is
+  int column; /// column of the current line of source code where \current is
 
   // Helper methods
 
   /// true if \c is between 0-9
-  static bool isDigit(char c);
+  [[nodiscard]] static bool isDigit(char c);
 
   /// true if \c is a letter from a-zA-Z or underscore _
-  static bool isAlpha(char c);
+  [[nodiscard]] static bool isAlpha(char c);
 
   /// true if \c is a digit or a alphabet character
-  static bool isAlphaNum(char c);
+  [[nodiscard]] static bool isAlphaNum(char c);
 
   /// prints the error \error_msg
-  void reportError(std::string msg);
+  void reportError(const std::string& msg);
 
   /// updates \start counter to the position of \current counter
   void updateStart();
 
   /// true if \current is equal to the length of source code
-  bool isAtEnd() const;
+  [[nodiscard]] bool isAtEnd() const;
 
   /// returns the character at \current position in source code
   ///   If isAtEnd() returns the null character
-  char peek() const;
+  [[nodiscard]] char peek() const;
 
   /// returns the character at \current+1 position in source code
   ///   If isAtEnd() returns the null character
-  char peekNext() const;
+  [[nodiscard]] char peekNext() const;
 
   /// returns the character at \current position and increments \current.
   ///   If isAtEnd() returns the null character
   char advance();
 
   /// returns the TokenType of the string from \start to \current in source code
-  TokenType tokenType();
+  [[nodiscard]] TokenType tokenType();
 
   /// constructs a Token of \type with value the string from \start to \current in source code
-  Token makeToken(TokenType type) const;
+  [[nodiscard]] Token makeToken(TokenType type) const;
 
   /// reports the error and creates an error token
-  Token makeErrorToken(std::string errorMsg);
+  [[nodiscard]] Token makeErrorToken(std::string errorMsg);
 
   /// advances \current while it is a blank character
   void skipWhiteSpaces();

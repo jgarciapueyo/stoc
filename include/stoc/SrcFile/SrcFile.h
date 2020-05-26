@@ -41,21 +41,21 @@ public:
 public:
   /// Constructor
   /// \field path - path where the source file is stored
-  SrcFile(std::string &path);
+  explicit SrcFile(std::string &path);
 
-  const std::string &getPath() const;
-  const std::string &getDirectory() const;
-  const std::string &getFilename() const;
-  const std::string &getData() const;
-  int getLength() const;
+  [[nodiscard]] const std::string &getPath() const;
+  [[nodiscard]] const std::string &getDirectory() const;
+  [[nodiscard]] const std::string &getFilename() const;
+  [[nodiscard]] const std::string &getData() const;
+  [[nodiscard]] int getLength() const;
 
-  const std::vector<Token> &getTokens() const;
+  [[nodiscard]] const std::vector<Token> &getTokens() const;
   void setTokens(const std::vector<Token> &t);
-  bool isErrorInScanning() const;
+  [[nodiscard]] bool isErrorInScanning() const;
   void setErrorInScanning(bool error);
-  const std::vector<std::shared_ptr<BasicNode>> &getAst() const;
+  [[nodiscard]] const std::vector<std::shared_ptr<BasicNode>> &getAst() const;
   void setAst(const std::vector<std::shared_ptr<BasicNode>> &ast_nodes);
-  bool isErrorInParsing() const;
+  [[nodiscard]] bool isErrorInParsing() const;
   void setErrorInParsing(bool error);
 };
 

@@ -37,9 +37,9 @@ public:
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  const std::shared_ptr<Expr> &getLhs() const;
-  const std::shared_ptr<Expr> &getRhs() const;
-  const Token &getOp() const;
+  [[nodiscard]] const std::shared_ptr<Expr> &getLhs() const;
+  [[nodiscard]] const std::shared_ptr<Expr> &getRhs() const;
+  [[nodiscard]] const Token &getOp() const;
 };
 
 /// An unary expression is a node in the AST that contains another node and an operator
@@ -59,8 +59,8 @@ public:
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  const std::shared_ptr<Expr> &getRhs() const;
-  const Token &getOp() const;
+  [[nodiscard]] const std::shared_ptr<Expr> &getRhs() const;
+  [[nodiscard]] const Token &getOp() const;
 };
 
 /// A literal expression is a node in the AST that represent integers, floats, strings,
@@ -71,29 +71,33 @@ private:
   Token token;
 
 public:
-  LiteralExpr(Token lit);
+  explicit LiteralExpr(Token lit);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  const Token &getToken() const;
+  [[nodiscard]] const Token &getToken() const;
 };
 
+/// An identifier expression is a node in the AST that represents an identifier
+/// (variable, constant, function)
 class IdentExpr : public Expr {
 private:
   Token ident;
-  std::string name;
 
 public:
-  IdentExpr(Token ident, std::string name);
+  explicit IdentExpr(Token ident);
 
+  /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
-  const Token &getIdent() const;
-  const std::string &getName() const;
+  // Getters
+  [[nodiscard]] const Token &getIdent() const;
+  [[nodiscard]] const std::string &getName() const;
 };
 
+/// A call expression is a node in the AST that represents calling a function
 class CallExpr : public Expr {
 private:
   std::shared_ptr<Expr> func;
@@ -102,10 +106,12 @@ private:
 public:
   CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr>> args);
 
+  /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
-  const std::shared_ptr<Expr> &getFunc() const;
-  const std::vector<std::shared_ptr<Expr>> &getArgs() const;
+  // Getters
+  [[nodiscard]] const std::shared_ptr<Expr> &getFunc() const;
+  [[nodiscard]] const std::vector<std::shared_ptr<Expr>> &getArgs() const;
 };
 
 #endif // STOC_EXPR_H

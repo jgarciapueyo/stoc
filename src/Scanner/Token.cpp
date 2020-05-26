@@ -10,16 +10,17 @@
 
 #include <iomanip>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 std::string typeAsString(TokenType type) {
   static std::vector<std::string> stringRepresentation = {
-      "ADD",        "SUB",     "STAR",       "SLASH",    "LAND",      "LOR",        "NOT",
-      "ASSIGN",     "EQUAL",   "NOT_EQUAL",  "LESS",     "GREATER",   "LESS_EQUAL", "GREATER_EQUAL",
-      "LPAREN",     "RPAREN",  "LBRACE",     "RBRACE",   "SEMICOLON", "VAR",        "CONST",
-      "IF",         "ELSE",    "FOR",        "WHILE",    "FUNC",      "RETURN",     "BOOL",
-      "INT",        "FLOAT",   "STRING",     "LIT_TRUE", "LIT_FALSE", "LIT_INT",    "LIT_FLOAT",
-      "LIT_STRING", "LIT_NIL", "IDENTIFIER", "ILLEGAL",  "T_EOF"};
+      "'+'",       "'-'",        "'*'",     "'/'",        "'&&'",     "'||'",      "'!'",
+      "'='",       "'=='",       "'!='",    "'<'",        "'>'",      "'<='",      "'>='",
+      "'('",       "')'",        "'{'",     "'}'",        "';'",      "','",       "var",
+      "const",     "if",         "else",    "for",        "while",    "func",      "return",
+      "bool",      "int",        "float",   "string",     "LIT_TRUE", "LIT_FALSE", "LIT_INT",
+      "LIT_FLOAT", "LIT_STRING", "LIT_NIL", "IDENTIFIER", "ILLEGAL",  "T_EOF"};
 
   return stringRepresentation[type];
 }
@@ -53,18 +54,17 @@ int tokenPrec(TokenType type) {
   }
 }
 
-Token::Token(TokenType type, int begin, int line, std::string value)
-    : type(type), begin(begin), line(line), value(value) {}
+Token::Token(TokenType type, int begin, int line, int column, std::string value)
+    : type(type), begin(begin), line(line), column(column), value(std::move(value)) {}
 
-Token::Token(TokenType type, int begin, int line) : type(type), begin(begin), line(line) {}
+Token::Token(TokenType type, int begin, int line, int column)
+    : type(type), begin(begin), line(line), column(column) {}
 
-Token::Token() {}
+Token::Token() = default;
 
-std::string Token::getTypeAsString() const {
-  return typeAsString(this->type);
-}
+std::string Token::getTypeAsString() const { return typeAsString(this->type); }
 
-std::ostream &operator<<(std::ostream &os, const Token t) {
+std::ostream &operator<<(std::ostream &os, const Token &t) {
   os << std::setw(5) << t.line << " " << std::setw(4) << t.begin << " " << std::setw(10) << t.value
      << " " << t.type;
   return os;
