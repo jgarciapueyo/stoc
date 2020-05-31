@@ -31,6 +31,7 @@ SrcFile::SrcFile(std::string &path) {
     this->errorInScanning = false;
     this->ast = {};
     this->errorInParsing = false;
+    this->errorInSemanticAnalysis = false;
   } else {
     ifs.close();
     throw std::runtime_error("Failed to open source file " + path);
@@ -53,3 +54,8 @@ void SrcFile::setAst(const std::vector<std::shared_ptr<BasicNode>> &ast_nodes) {
 }
 bool SrcFile::isErrorInParsing() const { return errorInParsing; }
 void SrcFile::setErrorInParsing(bool error) { this->errorInParsing = error; }
+
+bool SrcFile::isErrorInSemanticAnalysis() const { return errorInSemanticAnalysis; }
+void SrcFile::setErrorInSemanticAnalysis(bool errorInSemanticAnalysis) {
+  SrcFile::errorInSemanticAnalysis = errorInSemanticAnalysis;
+}

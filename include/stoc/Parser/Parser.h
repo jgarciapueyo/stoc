@@ -100,7 +100,7 @@ private:
   std::shared_ptr<Stmt> parseSimpleStmt(bool semicolonExp);
 
   /// parses a block statement
-  std::shared_ptr<Stmt> parseBlockStmt();
+  std::shared_ptr<BlockStmt> parseBlockStmt();
 
   /// parses an if statement
   std::shared_ptr<Stmt> parseIfStmt();

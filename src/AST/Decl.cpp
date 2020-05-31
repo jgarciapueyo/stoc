@@ -1,3 +1,4 @@
+// TODO: add header of the file
 #include "stoc/AST/Decl.h"
 
 // Variable Declaration node
@@ -34,19 +35,21 @@ const Token &ParamDecl::getIdentifier() const { return identifier; }
 
 // Function Declaration node
 FuncDecl::FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
-                   Token returnType, std::shared_ptr<Stmt> body)
+                   Token returnType, std::shared_ptr<BlockStmt> body)
     : funcKeyword(funcKeyword), identifier(identifier), params(params), returnType(returnType), body(body),
       hasReturnType(true) {}
 
 FuncDecl::FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
-                   std::shared_ptr<Stmt> body)
+                   std::shared_ptr<BlockStmt> body)
     : funcKeyword(funcKeyword), identifier(identifier), params(params), body(body), hasReturnType(false) {}
 
-void FuncDecl::accept(ASTVisitor *visitor) { visitor->visit(*this); }
+void FuncDecl::accept(ASTVisitor *visitor) {
+  visitor->visit(*this);
+}
 
 const Token &FuncDecl::getFuncKeyword() const { return funcKeyword; };
 const Token &FuncDecl::getIdentifier() const { return identifier; }
 const std::vector<std::shared_ptr<ParamDecl>> &FuncDecl::getParams() const { return params; }
 const Token &FuncDecl::getReturnType() const { return returnType; }
 bool FuncDecl::isHasReturnType() const { return hasReturnType; }
-const std::shared_ptr<Stmt> &FuncDecl::getBody() const { return body; }
+const std::shared_ptr<BlockStmt> &FuncDecl::getBody() const { return body; }

@@ -104,6 +104,9 @@ public:
 
   [[nodiscard]] std::string getTypeAsString() const;
 
+  // TODO: delete if not necessary
+  bool operator==(const Token &other) const;
+
 public:
   TokenType type;
 
@@ -123,5 +126,4 @@ public:
 };
 
 std::ostream &operator<<(std::ostream &os, const Token &t);
-
 #endif // STOC_TOKEN_H

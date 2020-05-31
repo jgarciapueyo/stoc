@@ -64,8 +64,24 @@ Token::Token() = default;
 
 std::string Token::getTypeAsString() const { return typeAsString(this->type); }
 
+bool Token::operator==(const Token &other) const {
+  return (this->type == other.type) && (this->begin == other.begin) && (this->line == other.line) &&
+         (this->column == other.column) && (this->value == other.value);
+}
+
 std::ostream &operator<<(std::ostream &os, const Token &t) {
   os << std::setw(5) << t.line << " " << std::setw(4) << t.begin << " " << std::setw(10) << t.value
      << " " << t.type;
   return os;
+}
+
+// TODO: delete if not necessary
+namespace std {
+// Custom Hash Function for Token
+template<>
+struct hash<Token> {
+  std::size_t operator()(const Token &t) const noexcept {
+    return std::hash<std::string>{}(t.value);
+  }
+};
 }

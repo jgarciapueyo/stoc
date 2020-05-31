@@ -1,3 +1,4 @@
+// TODO: add header of the file
 #ifndef STOC_DECL_H
 #define STOC_DECL_H
 
@@ -90,14 +91,14 @@ private:
   Token returnType;
   /// true if function returns something, false otherwise
   bool hasReturnType;
-  std::shared_ptr<Stmt> body;
+  std::shared_ptr<BlockStmt> body;
 
 public:
   FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
-           Token returnType, std::shared_ptr<Stmt> body);
+           Token returnType, std::shared_ptr<BlockStmt> body);
 
   FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
-           std::shared_ptr<Stmt> body);
+           std::shared_ptr<BlockStmt> body);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
@@ -108,8 +109,7 @@ public:
   [[nodiscard]] const std::vector<std::shared_ptr<ParamDecl>> &getParams() const;
   [[nodiscard]] const Token &getReturnType() const;
   [[nodiscard]] bool isHasReturnType() const;
-  // TODO: see if Stmt should be changed to BlockStmt
-  [[nodiscard]] const std::shared_ptr<Stmt> &getBody() const;
+  [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
 };
 
 #endif // STOC_DECL_H

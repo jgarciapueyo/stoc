@@ -7,6 +7,9 @@ add_executable(stoc main.cpp
         AST/ASTPrinter.cpp
         AST/Expr.cpp
         AST/Decl.cpp
-        AST/Stmt.cpp)
+        AST/Stmt.cpp
+        SemanticAnalysis/Semantic.cpp
+        SemanticAnalysis/Symbol.cpp
+        SemanticAnalysis/SymbolTable.cpp)
 
 

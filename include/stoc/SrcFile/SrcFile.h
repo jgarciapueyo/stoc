@@ -38,6 +38,9 @@ public:
   bool errorInParsing; /// represents if an error has occurred during the parsing phase
                        /// (e.g. a malformed expression, closing parenthesis missing, ...)
 
+  // Fields for the semantic analysis phase
+  bool errorInSemanticAnalysis;
+
 public:
   /// Constructor
   /// \field path - path where the source file is stored
@@ -57,6 +60,8 @@ public:
   void setAst(const std::vector<std::shared_ptr<BasicNode>> &ast_nodes);
   [[nodiscard]] bool isErrorInParsing() const;
   void setErrorInParsing(bool error);
+  [[nodiscard]] bool isErrorInSemanticAnalysis() const;
+  void setErrorInSemanticAnalysis(bool errorInSemanticAnalysis);
 };
 
 #endif // STOC_SRCFILE_H

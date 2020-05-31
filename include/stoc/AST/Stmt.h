@@ -1,3 +1,4 @@
+// TODO: add header of the file
 #ifndef STOC_STMT_H
 #define STOC_STMT_H
 
@@ -88,16 +89,15 @@ private:
   /// keyword IF (needed for printing AST)
   Token ifKeyword;
   std::shared_ptr<Expr> condition;
-  // TODO: see if Stmt should be changed to BlockStmt
-  std::shared_ptr<Stmt> thenBranch;
+    std::shared_ptr<BlockStmt> thenBranch;
   std::shared_ptr<Stmt> elseBranch;
   bool hasElse;
 
 public:
-  IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> thenBranch,
+  IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<BlockStmt> thenBranch,
          std::shared_ptr<Stmt> elseBranch);
 
-  IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> thenBranch);
+  IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<BlockStmt> thenBranch);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
@@ -105,7 +105,7 @@ public:
   // Getters
   [[nodiscard]] const Token &getIfKeyword() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getCondition() const;
-  [[nodiscard]] const std::shared_ptr<Stmt> &getThenBranch() const;
+  [[nodiscard]] const std::shared_ptr<BlockStmt> &getThenBranch() const;
   [[nodiscard]] const std::shared_ptr<Stmt> &getElseBranch() const;
   [[nodiscard]] bool isHasElse() const;
 };
@@ -118,12 +118,11 @@ private:
   std::shared_ptr<Stmt> init;
   std::shared_ptr<Expr> cond;
   std::shared_ptr<Stmt> post;
-  // TODO: see if Stmt should be changed to BlockStmt
-  std::shared_ptr<Stmt> body;
+  std::shared_ptr<BlockStmt> body;
 
 public:
   ForStmt(Token forKeyword, std::shared_ptr<Stmt> init, std::shared_ptr<Expr> cond,
-          std::shared_ptr<Stmt> post, std::shared_ptr<Stmt> body);
+          std::shared_ptr<Stmt> post, std::shared_ptr<BlockStmt> body);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
@@ -133,7 +132,7 @@ public:
   [[nodiscard]] const std::shared_ptr<Stmt> &getInit() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getCond() const;
   [[nodiscard]] const std::shared_ptr<Stmt> &getPost() const;
-  [[nodiscard]] const std::shared_ptr<Stmt> &getBody() const;
+  [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
 };
 
 /// A while statement is a node in the AST that represents the while loop control flow structure
@@ -142,11 +141,10 @@ private:
   /// keyword WHILE (needed for printing AST)
   Token whileKeyword;
   std::shared_ptr<Expr> cond;
-  // TODO: see if Stmt should be changed to BlockStmt
-  std::shared_ptr<Stmt> body;
+  std::shared_ptr<BlockStmt> body;
 
 public:
-  WhileStmt(Token whileKeyword, std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body);
+  WhileStmt(Token whileKeyword, std::shared_ptr<Expr> cond, std::shared_ptr<BlockStmt> body);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
@@ -154,7 +152,7 @@ public:
   // Getters
   [[nodiscard]] const Token &getWhileKeyword() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getCond() const;
-  [[nodiscard]] const std::shared_ptr<Stmt> &getBody() const;
+  [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
 };
 
 /// A return statement is a node in the AST that represents the return value of a function

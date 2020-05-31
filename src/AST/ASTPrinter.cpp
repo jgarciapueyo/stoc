@@ -70,7 +70,12 @@ void ASTPrinter::visit(ParamDecl node) {
 void ASTPrinter::visit(FuncDecl node) {
   std::cout << pre << "-FuncDecl <l."
             << node.getFuncKeyword().line << ":c" << node.getFuncKeyword().column << "> '"
-            << node.getIdentifier().value << "' " << node.getReturnType().getTypeAsString() << std::endl;
+            << node.getIdentifier().value << "' ";
+
+  if(node.isHasReturnType()) {
+    std::cout << node.getReturnType().getTypeAsString();
+  }
+  std::cout << std::endl;
 
   increaseDepthLevel();
 

@@ -1,3 +1,4 @@
+// TODO: add header of the file
 #include "stoc/AST/Stmt.h"
 
 // Expression Statement node
@@ -25,26 +26,26 @@ const Token &BlockStmt::getRbrace() const { return rbrace; }
 const std::vector<std::shared_ptr<Stmt>> &BlockStmt::getStmts() const { return stmts; }
 
 // If Statement node
-IfStmt::IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> thenBranch,
+IfStmt::IfStmt(Token ifKeyword, std::shared_ptr<Expr> condition, std::shared_ptr<BlockStmt> thenBranch,
                std::shared_ptr<Stmt> elseBranch)
     : ifKeyword(ifKeyword), condition(condition), thenBranch(thenBranch), elseBranch(elseBranch),
       hasElse(true) {}
 
-IfStmt::IfStmt(Token ifToken, std::shared_ptr<Expr> condition, std::shared_ptr<Stmt> thenBranch)
-    : ifKeyword(ifKeyword), condition(condition), thenBranch(thenBranch), elseBranch(nullptr),
+IfStmt::IfStmt(Token ifToken, std::shared_ptr<Expr> condition, std::shared_ptr<BlockStmt> thenBranch)
+    : ifKeyword(ifToken), condition(condition), thenBranch(thenBranch), elseBranch(nullptr),
       hasElse(false) {}
 
 void IfStmt::accept(ASTVisitor *visitor) { visitor->visit(*this); }
 
 const Token &IfStmt::getIfKeyword() const { return ifKeyword; }
 const std::shared_ptr<Expr> &IfStmt::getCondition() const { return condition; }
-const std::shared_ptr<Stmt> &IfStmt::getThenBranch() const { return thenBranch; }
+const std::shared_ptr<BlockStmt> &IfStmt::getThenBranch() const { return thenBranch; }
 const std::shared_ptr<Stmt> &IfStmt::getElseBranch() const { return elseBranch; }
 bool IfStmt::isHasElse() const { return hasElse; }
 
 // For Statement node
-ForStmt::ForStmt(Token forToken, std::shared_ptr<Stmt> init, std::shared_ptr<Expr> cond,
-                 std::shared_ptr<Stmt> post, std::shared_ptr<Stmt> body)
+ForStmt::ForStmt(Token forKeyword, std::shared_ptr<Stmt> init, std::shared_ptr<Expr> cond,
+                 std::shared_ptr<Stmt> post, std::shared_ptr<BlockStmt> body)
     : forKeyword(forKeyword), init(init), cond(cond), post(post), body(body) {}
 
 void ForStmt::accept(ASTVisitor *visitor) { visitor->visit(*this); }
@@ -53,17 +54,17 @@ const Token &ForStmt::getForKeyword() const { return forKeyword; }
 const std::shared_ptr<Stmt> &ForStmt::getInit() const { return init; }
 const std::shared_ptr<Expr> &ForStmt::getCond() const { return cond; }
 const std::shared_ptr<Stmt> &ForStmt::getPost() const { return post; }
-const std::shared_ptr<Stmt> &ForStmt::getBody() const { return body; }
+const std::shared_ptr<BlockStmt> &ForStmt::getBody() const { return body; }
 
 // While Statement node
-WhileStmt::WhileStmt(Token whileKeyword, std::shared_ptr<Expr> cond, std::shared_ptr<Stmt> body)
+WhileStmt::WhileStmt(Token whileKeyword, std::shared_ptr<Expr> cond, std::shared_ptr<BlockStmt> body)
     : whileKeyword(whileKeyword), cond(cond), body(body) {}
 
 void WhileStmt::accept(ASTVisitor *visitor) { visitor->visit(*this); }
 
 const Token &WhileStmt::getWhileKeyword() const { return whileKeyword; }
 const std::shared_ptr<Expr> &WhileStmt::getCond() const { return cond; }
-const std::shared_ptr<Stmt> &WhileStmt::getBody() const { return body; }
+const std::shared_ptr<BlockStmt> &WhileStmt::getBody() const { return body; }
 
 // Assignment Statement node
 AssignmentStmt::AssignmentStmt(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs, Token equalToken)

@@ -67,10 +67,10 @@ std::shared_ptr<Decl> Parser::parseFuncDecl() {
   // TODO: see if this can be improved by creating a Token that means no return type
   if (!check(LBRACE)) {
     Token returnType = parseReturnType();
-    std::shared_ptr<Stmt> body = parseBlockStmt();
+    std::shared_ptr<BlockStmt> body = parseBlockStmt();
     return std::make_shared<FuncDecl>(funcKeyword, name, params, returnType, body);
   } else {
-    std::shared_ptr<Stmt> body = parseBlockStmt();
+    std::shared_ptr<BlockStmt> body = parseBlockStmt();
     return std::make_shared<FuncDecl>(funcKeyword, name, params, body);
   }
 }
@@ -121,7 +121,7 @@ std::shared_ptr<Stmt> Parser::parseSimpleStmt(bool semicolonExp) {
   }
 }
 
-std::shared_ptr<Stmt> Parser::parseBlockStmt() {
+std::shared_ptr<BlockStmt> Parser::parseBlockStmt() {
   std::vector<std::shared_ptr<Stmt>> stmts = {};
 
   // we know current token is '{'
@@ -138,7 +138,7 @@ std::shared_ptr<Stmt> Parser::parseIfStmt() {
   // we know current token is IF
   Token ifKeyword = advance();
   std::shared_ptr<Expr> cond = parseExpr();
-  std::shared_ptr<Stmt> thenBranch = parseBlockStmt();
+  std::shared_ptr<BlockStmt> thenBranch = parseBlockStmt();
 
   std::shared_ptr<Stmt> elseBranch = nullptr;
   if (match(ELSE)) {
@@ -188,7 +188,7 @@ std::shared_ptr<Stmt> Parser::parseForStmt() {
     post = parseSimpleStmt(false);
   }
 
-  std::shared_ptr<Stmt> body = parseBlockStmt();
+  std::shared_ptr<BlockStmt> body = parseBlockStmt();
   return std::make_shared<ForStmt>(forKeyword, init, cond, post, body);
 }
 
@@ -196,12 +196,13 @@ std::shared_ptr<Stmt> Parser::parseWhileStmt() {
   // we know current token is WHILE
   Token whileKeyword = advance();
   std::shared_ptr<Expr> cond = parseExpr();
-  std::shared_ptr<Stmt> body = parseBlockStmt();
+  std::shared_ptr<BlockStmt> body = parseBlockStmt();
 
   return std::make_shared<WhileStmt>(whileKeyword, cond, body);
 }
 
 std::shared_ptr<Stmt> Parser::parseReturnStmt() {
+  // TODO: check that we are inside a function to be able to return
   // we know curret token is RETURN
   Token returnKeyword = advance();
 

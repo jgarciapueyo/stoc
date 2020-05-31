@@ -1,3 +1,4 @@
+// TODO: add header of the file
 #include <iostream>
 #include <string>
 
@@ -6,6 +7,7 @@
 #include "stoc/AST/ASTPrinter.h"
 #include "stoc/Parser/Parser.h"
 #include "stoc/Scanner/Scanner.h"
+#include "stoc/SemanticAnalysis/Semantic.h"
 #include "stoc/SrcFile/SrcFile.h"
 
 void initOptions(cxxopts::Options &options) {
@@ -58,7 +60,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    // Parse file
+    // Parse file (parsing)
     Parser parser(src);
     parser.parse();
 
@@ -67,11 +69,24 @@ int main(int argc, char *argv[]) {
     }
 
     if(opt["ast-dump"].as<bool>()) {
+      // TODO: remove and call from print()
       ASTPrinter printer;
       for(const auto &node : src->getAst()) {
         printer.print(node);
       }
     }
+
+    // Semantic Analysis
+    Semantic semantic(src);
+    semantic.analyse();
+
+    if(src->isErrorInSemanticAnalysis()) {
+      return 1;
+    }
+
+    // Code Generation
+
+
   }
   catch(std::exception& e) {
     std::cerr << e.what() << std::endl;
