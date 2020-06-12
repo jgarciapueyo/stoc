@@ -39,6 +39,8 @@ private:
   std::vector<std::string> parameterListType;
 
 public:
+  Symbol() = default;
+
   /// Constructor for variables, constant and parameters
   Symbol(std::string identifier, SymbolType type, std::string returnType);
 
@@ -49,6 +51,7 @@ public:
   [[nodiscard]] const std::string &getIdentifier() const;
   [[nodiscard]] SymbolType getType() const;
   [[nodiscard]] const std::vector<std::string> &getParameterList() const;
+  const std::string &getReturnType() const;
 };
 
 #endif // STOC_SYMBOL_H

@@ -10,7 +10,8 @@
 #include <vector>
 
 /// A declaration is a node in the AST that declares a new name (variable, constant, function)
-class Decl : public BasicNode {};
+class Decl : public BasicNode {
+};
 
 /// A variable declaration is a node in the AST that declares and defines a variable
 ///  (e.g. var type name = value)

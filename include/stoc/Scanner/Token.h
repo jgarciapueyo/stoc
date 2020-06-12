@@ -67,7 +67,7 @@ enum TokenType {
   IDENTIFIER, //
 
   // Special tokens
-  ILLEGAL, // tokens that are not allowed or erros
+  ILLEGAL, // tokens that are not allowed or errors
   T_EOF    // end of file
 };
 
