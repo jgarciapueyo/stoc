@@ -33,25 +33,25 @@ public:
   void print(const std::shared_ptr<BasicNode>& ast);
 
   // Visitor Pattern methods
-  void visit(VarDecl node) override;
-  void visit(ConstDecl node) override;
-  void visit(ParamDecl node) override;
-  void visit(FuncDecl node) override;
+  void visit(std::shared_ptr<VarDecl> node) override;
+  void visit(std::shared_ptr<ConstDecl> node) override;
+  void visit(std::shared_ptr<ParamDecl> node) override;
+  void visit(std::shared_ptr<FuncDecl> node) override;
 
-  void visit(ExpressionStmt node) override;
-  void visit(DeclarationStmt node) override;
-  void visit(BlockStmt node) override;
-  void visit(IfStmt node) override;
-  void visit(ForStmt node) override;
-  void visit(WhileStmt node) override;
-  void visit(AssignmentStmt node) override;
-  void visit(ReturnStmt node) override;
+  void visit(std::shared_ptr<DeclarationStmt> node) override;
+  void visit(std::shared_ptr<ExpressionStmt> node) override;
+  void visit(std::shared_ptr<BlockStmt> node) override;
+  void visit(std::shared_ptr<IfStmt> node) override;
+  void visit(std::shared_ptr<ForStmt> node) override;
+  void visit(std::shared_ptr<WhileStmt> node) override;
+  void visit(std::shared_ptr<AssignmentStmt> node) override;
+  void visit(std::shared_ptr<ReturnStmt> node) override;
 
-  void visit(BinaryExpr node) override;
-  void visit(UnaryExpr node) override;
-  void visit(LiteralExpr node) override;
-  void visit(IdentExpr node) override;
-  void visit(CallExpr node) override;
+  void visit(std::shared_ptr<BinaryExpr> node) override;
+  void visit(std::shared_ptr<UnaryExpr> node) override;
+  void visit(std::shared_ptr<LiteralExpr> node) override;
+  void visit(std::shared_ptr<IdentExpr> node) override;
+  void visit(std::shared_ptr<CallExpr> node) override;
 };
 
 #endif // STOC_ASTPRINTER_H

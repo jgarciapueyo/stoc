@@ -28,13 +28,20 @@ private:
   /// Depth level of the current scope
   int scopeLevel;
 
+  // Use in function declaration
   FunctionType functionType;
 
+  // Use in return statement inside function declaration
+  std::string returnType; // needed for type checking of return statement
+
+  // Use in call expression or other nodes that need information about most recent resolved symbol
+  Symbol resolvedSymbol;
+
   // WRAPPER METHODS for ASTVisitor methods
-  void analyse(std::shared_ptr<Decl> decl);
-  void analyse(std::shared_ptr<Expr> expr);
-  void analyse(std::shared_ptr<Stmt> stmt);
-  void analyse(std::vector<std::shared_ptr<Stmt>> stmts);
+  void analyse(const std::shared_ptr<Decl>& decl);
+  void analyse(const std::shared_ptr<Expr>& expr);
+  void analyse(const std::shared_ptr<Stmt>& stmt);
+  void analyse(const std::vector<std::shared_ptr<Stmt>>& stmts);
 
   // HELPER METHODS
   /// It creates a new scope by creating a new symbol table
@@ -43,6 +50,12 @@ private:
   /// It ends current scope and returns \symbolTable to previous state
   void endScope();
 
+  std::pair<bool, std::string> isValidOperatorForType(const Token& op, std::string typeOperands);
+  std::pair<bool, std::string> isValidOperatorForNumericType(const Token& op, std::string typeOperands);
+  std::pair<bool, std::string> isValidOperatorForStringType(const Token& op, std::string typeOperands);
+  std::pair<bool, std::string> isValidOperatorForBoolType(const Token& op, std::string typeOperands);
+
+  static std::string tokenTypeToType(TokenType tokenType);
 public:
   explicit Semantic(std::shared_ptr<SrcFile> file);
 
@@ -50,25 +63,25 @@ public:
   void analyse();
 
   // Methods for ASTVisitor
-  void visit(VarDecl node) override;
-  void visit(ConstDecl node) override;
-  void visit(ParamDecl node) override;
-  void visit(FuncDecl node) override;
+  void visit(std::shared_ptr<VarDecl> node) override;
+  void visit(std::shared_ptr<ConstDecl> node) override;
+  void visit(std::shared_ptr<ParamDecl> node) override;
+  void visit(std::shared_ptr<FuncDecl> node) override;
 
-  void visit(DeclarationStmt node) override;
-  void visit(ExpressionStmt node) override;
-  void visit(BlockStmt node) override;
-  void visit(IfStmt node) override;
-  void visit(ForStmt node) override;
-  void visit(WhileStmt node) override;
-  void visit(AssignmentStmt node) override;
-  void visit(ReturnStmt node) override;
+  void visit(std::shared_ptr<DeclarationStmt> node) override;
+  void visit(std::shared_ptr<ExpressionStmt> node) override;
+  void visit(std::shared_ptr<BlockStmt> node) override;
+  void visit(std::shared_ptr<IfStmt> node) override;
+  void visit(std::shared_ptr<ForStmt> node) override;
+  void visit(std::shared_ptr<WhileStmt> node) override;
+  void visit(std::shared_ptr<AssignmentStmt> node) override;
+  void visit(std::shared_ptr<ReturnStmt> node) override;
 
-  void visit(BinaryExpr node) override;
-  void visit(UnaryExpr node) override;
-  void visit(LiteralExpr node) override;
-  void visit(IdentExpr node) override;
-  void visit(CallExpr node) override;
+  void visit(std::shared_ptr<BinaryExpr> node) override;
+  void visit(std::shared_ptr<UnaryExpr> node) override;
+  void visit(std::shared_ptr<LiteralExpr> node) override;
+  void visit(std::shared_ptr<IdentExpr> node) override;
+  void visit(std::shared_ptr<CallExpr> node) override;
 };
 
 #endif // STOC_SEMANTICANALYSIS_H

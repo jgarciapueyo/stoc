@@ -3,7 +3,7 @@
 //===----------------------------------------------------------------------------------===//
 //
 // This file implements the ASTPrinter class.
-// It prints the AST in a pretty way with information about every node.
+// It prints the AST in a pretty way with information about every node->
 //
 //===---------------------------------------------------------------------------------===//
 
@@ -37,234 +37,235 @@ void ASTPrinter::decreaseDepthLevel() {
 
 void ASTPrinter::print(const std::shared_ptr<BasicNode> &ast) { ast->accept(this); }
 
-void ASTPrinter::visit(VarDecl node) {
+void ASTPrinter::visit(std::shared_ptr<VarDecl> node) {
   // print variable declaration token
   std::cout << pre << "-VarDecl <l."
-            << node.getVarKeyword().line << ":c." << node.getVarKeyword().column << "> '"
-            << node.getIdentifier().value << "' " << node.getType().getTypeAsString() << std::endl;
+            << node->getVarKeyword().line << ":c." << node->getVarKeyword().column << "> '"
+            << node->getIdentifier().value << "' " << node->getType().getTypeAsString() << std::endl;
 
   increaseDepthLevel();
   lastChild();
-  node.getValue()->accept(this);
+  node->getValue()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(ConstDecl node) {
+void ASTPrinter::visit(std::shared_ptr<ConstDecl> node) {
   // print constant declaration token
   std::cout << pre << "-ConstDecl <l."
-            << node.getConstKeyword().line << ":c." << node.getConstKeyword().column << "> '"
-            << node.getIdentifier().value << "' " << node.getType().getTypeAsString() << std::endl;
+            << node->getConstKeyword().line << ":c." << node->getConstKeyword().column << "> '"
+            << node->getIdentifier().value << "' " << node->getType().getTypeAsString() << std::endl;
 
   increaseDepthLevel();
   lastChild();
-  node.getValue()->accept(this);
+  node->getValue()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(ParamDecl node) {
+void ASTPrinter::visit(std::shared_ptr<ParamDecl> node) {
   std::cout << pre << "-ParamDecl <l."
-            << node.getKeyword().line << ":c." << node.getKeyword().column << "> '"
-            << node.getIdentifier().value << "' " << node.getType().getTypeAsString() << std::endl;
+            << node->getKeyword().line << ":c." << node->getKeyword().column << "> '"
+            << node->getIdentifier().value << "' " << node->getType().getTypeAsString() << std::endl;
 }
 
-void ASTPrinter::visit(FuncDecl node) {
+void ASTPrinter::visit(std::shared_ptr<FuncDecl> node) {
   std::cout << pre << "-FuncDecl <l."
-            << node.getFuncKeyword().line << ":c" << node.getFuncKeyword().column << "> '"
-            << node.getIdentifier().value << "' ";
+            << node->getFuncKeyword().line << ":c" << node->getFuncKeyword().column << "> '"
+            << node->getIdentifier().value << "' ";
 
-  if(node.isHasReturnType()) {
-    std::cout << node.getReturnType().getTypeAsString();
+  if(node->isHasReturnType()) {
+    std::cout << node->getReturnType().getTypeAsString();
   }
   std::cout << std::endl;
 
   increaseDepthLevel();
 
-  int size = node.getParams().size();
+  int size = node->getParams().size();
   for (int i = 0; i < size; i++) {
-    node.getParams().at(i)->accept(this);
+    node->getParams().at(i)->accept(this);
   }
 
   lastChild();
-  node.getBody()->accept(this);
+  node->getBody()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(BinaryExpr node) {
+void ASTPrinter::visit(std::shared_ptr<BinaryExpr> node) {
   std::cout << pre << "-BinaryExpr <l."
-            << node.getOp().line << ":c." << node.getOp().column << "> "
-            << node.getOp().getTypeAsString() << std::endl;
+            << node->getOp().line << ":c." << node->getOp().column << "> "
+            << node->getOp().getTypeAsString() << " " << node->getType() << std::endl;
 
   increaseDepthLevel();
-  node.getLhs()->accept(this);
+  node->getLhs()->accept(this);
   lastChild();
-  node.getRhs()->accept(this);
+  node->getRhs()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(UnaryExpr node) {
+void ASTPrinter::visit(std::shared_ptr<UnaryExpr> node) {
   std::cout << pre << "-UnaryExpr <l."
-            << node.getOp().line << ":c." << node.getOp().column << "> "
-            << node.getOp().getTypeAsString() << std::endl;
+            << node->getOp().line << ":c." << node->getOp().column << "> "
+            << node->getOp().getTypeAsString() << " " << node->getType() << std::endl;
 
   increaseDepthLevel();
   lastChild();
-  node.getRhs()->accept(this);
+  node->getRhs()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(LiteralExpr node) {
+void ASTPrinter::visit(std::shared_ptr<LiteralExpr> node) {
   std::cout << pre << "-LiteralExpr <l."
-            << node.getToken().line << ":c." << node.getToken().column << "> '"
-            << node.getToken().value << "' " << node.getToken().getTypeAsString() << std::endl;
+            << node->getToken().line << ":c." << node->getToken().column << "> '"
+            << node->getToken().value << "' " << node->getToken().getTypeAsString()
+            << " " << node->getType() << std::endl;
 }
 
-void ASTPrinter::visit(IdentExpr node) {
+void ASTPrinter::visit(std::shared_ptr<IdentExpr> node) {
   std::cout << pre << "-IdentExpr <l."
-            << node.getIdent().line << ":c." << node.getIdent().column << "> '"
-            << node.getName() << "'" << std::endl;
+            << node->getIdent().line << ":c." << node->getIdent().column << "> '"
+            << node->getName() << "'" << " " << node->getType() << std::endl;
 }
 
-void ASTPrinter::visit(CallExpr node) {
-  std::cout << pre << "-CallExpr" << std::endl;
+void ASTPrinter::visit(std::shared_ptr<CallExpr> node) {
+  std::cout << pre << "-CallExpr " << node->getType()<< std::endl;
 
-  int size = node.getArgs().size();
+  int size = node->getArgs().size();
   if (size > 0) {
     increaseDepthLevel();
-    node.getFunc()->accept(this);
+    node->getFunc()->accept(this);
 
     for (int i = 0; i < size - 1; i++) {
-      node.getArgs().at(i)->accept(this);
+      node->getArgs().at(i)->accept(this);
     }
 
     lastChild();
-    node.getArgs().at(size - 1)->accept(this);
+    node->getArgs().at(size - 1)->accept(this);
     decreaseDepthLevel();
   } else {
     increaseDepthLevel();
     lastChild();
-    node.getFunc()->accept(this);
+    node->getFunc()->accept(this);
     decreaseDepthLevel();
   }
 }
 
-void ASTPrinter::visit(ExpressionStmt node) {
+void ASTPrinter::visit(std::shared_ptr<ExpressionStmt> node) {
   std::cout << pre << "-ExpressionStmt" << std::endl;
 
   increaseDepthLevel();
   lastChild();
-  node.getExpr()->accept(this);
+  node->getExpr()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(DeclarationStmt node) {
+void ASTPrinter::visit(std::shared_ptr<DeclarationStmt> node) {
   std::cout << pre << "-DeclarationStmt" << std::endl;
 
   increaseDepthLevel();
   lastChild();
-  node.getDecl()->accept(this);
+  node->getDecl()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(BlockStmt node) {
+void ASTPrinter::visit(std::shared_ptr<BlockStmt> node) {
   std::cout << pre << "-BlockStmt <l."
-            << node.getLbrace().line << ":c." << node.getLbrace().column << "> - <l."
-            << node.getRbrace().line << ":c." << node.getRbrace().column << ">" << std::endl;
+            << node->getLbrace().line << ":c." << node->getLbrace().column << "> - <l."
+            << node->getRbrace().line << ":c." << node->getRbrace().column << ">" << std::endl;
 
-  int size = node.getStmts().size();
+  int size = node->getStmts().size();
   if(size > 0) {
     increaseDepthLevel();
     for (int i = 0; i < size - 1; i++) {
-      node.getStmts().at(i)->accept(this);
+      node->getStmts().at(i)->accept(this);
     }
 
     lastChild();
-    node.getStmts().at(node.getStmts().size() - 1)->accept(this);
+    node->getStmts().at(node->getStmts().size() - 1)->accept(this);
     decreaseDepthLevel();
   }
 }
 
-void ASTPrinter::visit(IfStmt node) {
+void ASTPrinter::visit(std::shared_ptr<IfStmt> node) {
   std::cout << pre << "-IfStmt <l."
-            << node.getIfKeyword().line << ":c." << node.getIfKeyword().column << ">" << std::endl;
+            << node->getIfKeyword().line << ":c." << node->getIfKeyword().column << ">" << std::endl;
 
   increaseDepthLevel();
 
-  node.getCondition()->accept(this);
+  node->getCondition()->accept(this);
 
-  if (node.isHasElse()) {
-    node.getThenBranch()->accept(this);
+  if (node->isHasElse()) {
+    node->getThenBranch()->accept(this);
     lastChild();
-    node.getElseBranch()->accept(this);
+    node->getElseBranch()->accept(this);
     decreaseDepthLevel();
   } else {
     lastChild();
-    node.getThenBranch()->accept(this);
+    node->getThenBranch()->accept(this);
     decreaseDepthLevel();
   }
 }
 
-void ASTPrinter::visit(ForStmt node) {
+void ASTPrinter::visit(std::shared_ptr<ForStmt> node) {
   std::cout << pre << "-ForStmt <l."
-            << node.getForKeyword().line << ":c." << node.getForKeyword().column << ">" << std::endl;
+            << node->getForKeyword().line << ":c." << node->getForKeyword().column << ">" << std::endl;
 
   increaseDepthLevel();
 
-  if (node.getInit() != nullptr) {
-    node.getInit()->accept(this);
+  if (node->getInit() != nullptr) {
+    node->getInit()->accept(this);
   } else {
     std::cout << pre << "- <<no initialization>>" << std::endl;
   }
 
-  if (node.getCond() != nullptr) {
-    node.getCond()->accept(this);
+  if (node->getCond() != nullptr) {
+    node->getCond()->accept(this);
   } else {
     std::cout << pre << "- <<no condition>>" << std::endl;
   }
 
-  if (node.getPost() != nullptr) {
-    node.getPost()->accept(this);
+  if (node->getPost() != nullptr) {
+    node->getPost()->accept(this);
   } else {
     std::cout << pre << "- <<no post statement>>" << std::endl;
   }
 
   lastChild();
-  node.getBody()->accept(this);
+  node->getBody()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(WhileStmt node) {
+void ASTPrinter::visit(std::shared_ptr<WhileStmt> node) {
   std::cout << pre << "-WhileStmt <l."
-            << node.getWhileKeyword().line << ":c." << node.getWhileKeyword().column << ">"
+            << node->getWhileKeyword().line << ":c." << node->getWhileKeyword().column << ">"
             << std::endl;
 
   increaseDepthLevel();
 
-  node.getCond()->accept(this);
+  node->getCond()->accept(this);
   lastChild();
-  node.getBody()->accept(this);
+  node->getBody()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(AssignmentStmt node) {
+void ASTPrinter::visit(std::shared_ptr<AssignmentStmt> node) {
   std::cout << pre << "-AssignmentStmt <l."
-            << node.getEqualToken().line << ":c." << node.getEqualToken().column << ">" << std::endl;
+            << node->getEqualToken().line << ":c." << node->getEqualToken().column << ">" << std::endl;
 
   increaseDepthLevel();
-  node.getLhs()->accept(this);
+  node->getLhs()->accept(this);
   lastChild();
-  node.getRhs()->accept(this);
+  node->getRhs()->accept(this);
   decreaseDepthLevel();
 }
 
-void ASTPrinter::visit(ReturnStmt node) {
+void ASTPrinter::visit(std::shared_ptr<ReturnStmt> node) {
   std::cout << pre << "-ReturnStmt <l."
-            << node.getReturnKeyword().line << ":c." << node.getReturnKeyword().column << ">"
+            << node->getReturnKeyword().line << ":c." << node->getReturnKeyword().column << ">"
             << std::endl;
 
-  if (node.getValue() != nullptr) {
+  if (node->getValue() != nullptr) {
     increaseDepthLevel();
     lastChild();
-    node.getValue()->accept(this);
+    node->getValue()->accept(this);
     decreaseDepthLevel();
   }
 }

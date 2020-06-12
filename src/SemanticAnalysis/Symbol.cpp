@@ -12,3 +12,4 @@ Symbol::Symbol(std::string identifier, SymbolType type, std::string returnType,
 const std::string &Symbol::getIdentifier() const { return identifier; }
 Symbol::SymbolType Symbol::getType() const { return type; }
 const std::vector<std::string> &Symbol::getParameterList() const { return parameterListType; }
+const std::string &Symbol::getReturnType() const { return returnType; }

@@ -68,13 +68,6 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    if(opt["ast-dump"].as<bool>()) {
-      // TODO: remove and call from print()
-      ASTPrinter printer;
-      for(const auto &node : src->getAst()) {
-        printer.print(node);
-      }
-    }
 
     // Semantic Analysis
     Semantic semantic(src);
@@ -82,6 +75,14 @@ int main(int argc, char *argv[]) {
 
     if(src->isErrorInSemanticAnalysis()) {
       return 1;
+    }
+
+    if(opt["ast-dump"].as<bool>()) {
+      // TODO: remove and call from print()
+      ASTPrinter printer;
+      for(const auto &node : src->getAst()) {
+        printer.print(node);
+      }
     }
 
     // Code Generation
