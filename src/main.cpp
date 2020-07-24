@@ -9,6 +9,7 @@
 #include "stoc/Scanner/Scanner.h"
 #include "stoc/SemanticAnalysis/Semantic.h"
 #include "stoc/SrcFile/SrcFile.h"
+#include "stoc/CodeGeneration/CodeGeneration.h"
 
 void initOptions(cxxopts::Options &options) {
   options.show_positional_help();
@@ -86,7 +87,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Code Generation
-
+    CodeGeneration codegen(src);
+    codegen.generate();
 
   }
   catch(std::exception& e) {

@@ -8,6 +8,10 @@ add_executable(stoc main.cpp
         AST/Expr.cpp
         AST/Decl.cpp
         AST/Stmt.cpp
+        CodeGeneration/CGDecl.cpp
+        CodeGeneration/CGExpr.cpp
+        CodeGeneration/CGStmt.cpp
+        CodeGeneration/CodeGeneration.cpp
         SemanticAnalysis/Semantic.cpp
         SemanticAnalysis/Symbol.cpp
         SemanticAnalysis/SymbolTable.cpp)
