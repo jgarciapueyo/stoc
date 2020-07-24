@@ -14,6 +14,9 @@
 class Semantic : public ASTVisitor {
   // It has been implemented as a subclass of the ASTVisitor, so the semantic analysis is done in
   // in every node
+
+  //TODO: add variable aliasing that facilitates codegeneration of variables with same identifier
+  // but different scopes since llvm ir is plain and does not have scopes
 public:
   /// Use to perform semantic analysis on some nodes depending on the context. For example, check
   /// check that a return statement only appears inside a function

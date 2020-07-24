@@ -9,7 +9,31 @@
 #include <vector>
 
 /// An statement is a node in the AST that expresses some action (controlling flow, ...)
-class Stmt : public BasicNode {};
+class Stmt : public BasicNode, public std::enable_shared_from_this<Stmt> {
+  // It needs to inherit from std::enable_shared_from_this<Stmt> to be able to create a shared_ptr
+  // from inside the class (return this) without creating a new shared_ptr (which would copy
+  // the content of the class) and, when updating the instance of class, the changes are applied
+  // everywhere. [see src/AST/Expr.cpp:AssignmentStmt::accept() for example]. Useful when traversing
+  // the AST and modifying it.
+
+public:
+  enum StmtType {
+    DECLARATIONSTMT,
+    EXPRESSIONSTMT,
+    BLOCKSTMT,
+    IFSTMT,
+    FORSTMT,
+    WHILESTMT,
+    ASSIGNMENTSTMT,
+    RETURNSTMT
+  };
+
+protected:
+  StmtType stmtType;
+
+public:
+  Stmt::StmtType getStmtType() const;
+};
 
 /// An expression statement is a node in the AST that represents an expression in a block statement
 class ExpressionStmt : public Stmt {
@@ -45,6 +69,7 @@ public:
 ///  \rhs right hand side node to the \lhs left hand side node
 class AssignmentStmt : public Stmt {
 private:
+  // TODO: check if expr lhs can really appear in the LeftHandSide and if rhs can really appear in the RightHandSide
   std::shared_ptr<Expr> lhs;
   std::shared_ptr<Expr> rhs;
 

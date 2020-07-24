@@ -10,7 +10,27 @@
 #include <vector>
 
 /// A declaration is a node in the AST that declares a new name (variable, constant, function)
-class Decl : public BasicNode {
+class Decl : public BasicNode, public std::enable_shared_from_this<Decl> {
+  // It needs to inherit from std::enable_shared_from_this<Decl> to be able to create a shared_ptr
+  // from inside the class (return this) without creating a new shared_ptr (which would copy
+  // the content of the class) and, when updating the instance of class, the changes are applied
+  // everywhere. [see src/AST/Expr.cpp:VarDecl::accept() for example] Useful when traversing
+  // the AST and modifying it.
+
+public:
+  /// Type of the declaration of the node in the AST
+  enum DeclType {
+    VARDECL,
+    CONSTDECL,
+    PARAMDECL,
+    FUNCDECL
+  };
+
+protected:
+  DeclType declType;
+
+public:
+  [[nodiscard]] Decl::DeclType getDeclType() const;
 };
 
 /// A variable declaration is a node in the AST that declares and defines a variable
@@ -22,6 +42,7 @@ private:
   Token type;
   Token identifier;
   std::shared_ptr<Expr> value;
+  bool isGlobalVariable;
 
 public:
   // TODO: change order of identifier and type (fields, constructor and getters)
@@ -35,6 +56,8 @@ public:
   [[nodiscard]] const Token &getIdentifier() const;
   [[nodiscard]] const Token &getType() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
+  [[nodiscard]] bool isGlobal() const;
+  void setIsGlobal(bool isGlobal);
 };
 
 /// A constant declaration is a node in the AST that declares and defines a constant
@@ -46,6 +69,7 @@ private:
   Token identifier;
   Token type;
   std::shared_ptr<Expr> value;
+  bool isGlobalConstant;
 
 public:
   // TODO: change order of identifier and type (fields, constructor and getters)
@@ -59,6 +83,8 @@ public:
   [[nodiscard]] const Token &getIdentifier() const;
   [[nodiscard]] const Token &getType() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
+  [[nodiscard]] bool isGlobal() const;
+  void setIsGlobal(bool isGlobal);
 };
 
 /// A parameter declaration is a node in the AST that declares a parameter in a function
@@ -111,6 +137,7 @@ public:
   [[nodiscard]] const Token &getReturnType() const;
   [[nodiscard]] bool isHasReturnType() const;
   [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
+  // TODO: add get name
 };
 
 #endif // STOC_DECL_H

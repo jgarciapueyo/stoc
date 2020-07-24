@@ -8,9 +8,14 @@
 
 #include "stoc/AST/Expr.h"
 
+// Expression node
+Expr::ExprType Expr::getExprType() const { return exprType; }
+
 // Binary Expression node
 BinaryExpr::BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs, Token &op)
-    : lhs(std::move(lhs)), rhs(std::move(rhs)), op(op) {}
+    : lhs(std::move(lhs)), rhs(std::move(rhs)), op(op) {
+  exprType = Expr::BINARYEXPR;
+}
 
 void BinaryExpr::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<BinaryExpr>(Expr::shared_from_this()));
@@ -23,7 +28,9 @@ const std::string &BinaryExpr::getType() const { return type; }
 void BinaryExpr::setType(const std::string &type) { BinaryExpr::type = type; }
 
 // Unary Expression node
-UnaryExpr::UnaryExpr(std::shared_ptr<Expr> rhs, Token &op) : rhs(std::move(rhs)), op(op) {}
+UnaryExpr::UnaryExpr(std::shared_ptr<Expr> rhs, Token &op) : rhs(std::move(rhs)), op(op) {
+  exprType = UNARYEXPR;
+}
 
 void UnaryExpr::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<UnaryExpr>(Expr::shared_from_this()));
@@ -35,7 +42,7 @@ const std::string &UnaryExpr::getType() const { return type; }
 void UnaryExpr::setType(const std::string &type) { UnaryExpr::type = type; };
 
 // Literal Expression node
-LiteralExpr::LiteralExpr(Token token) : token(token) {}
+LiteralExpr::LiteralExpr(Token token) : token(token) { exprType = LITERALEXPR; }
 
 void LiteralExpr::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<LiteralExpr>(Expr::shared_from_this()));
@@ -46,7 +53,7 @@ const std::string &LiteralExpr::getType() const { return type; }
 void LiteralExpr::setType(const std::string &type) { LiteralExpr::type = type; }
 
 // Identifier Expression node
-IdentExpr::IdentExpr(Token ident) : ident(ident) {}
+IdentExpr::IdentExpr(Token ident) : ident(ident) { exprType = IDENTEXPR; }
 
 void IdentExpr::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<IdentExpr>(Expr::shared_from_this()));
@@ -59,7 +66,9 @@ void IdentExpr::setType(const std::string &type) { IdentExpr::type = type; }
 
 // Call Expression node
 CallExpr::CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr>> args)
-    : func(func), args(args) {}
+    : func(func), args(args) {
+  exprType = CALLEXPR;
+}
 
 void CallExpr::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<CallExpr>(Expr::shared_from_this()));

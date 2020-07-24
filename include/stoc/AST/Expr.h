@@ -19,9 +19,29 @@
 
 /// An expression is a node in the AST that produces a value
 class Expr : public BasicNode, public std::enable_shared_from_this<Expr> {
+  // It needs to inherit from std::enable_shared_from_this<Expr> to be able to create a shared_ptr
+  // from inside the class (return this) without creating a new shared_ptr (which would copy
+  // the content of the class) and, when updating the instance of class, the changes are applied
+  // everywhere. [see src/AST/Expr.cpp:BinaryExpr::accept() for example] Useful when traversing
+  // the AST and modifying it.
+
+public:
+  /// Type of the expression of the node in the AST
+  enum ExprType {
+    BINARYEXPR,
+    UNARYEXPR,
+    LITERALEXPR,
+    IDENTEXPR,
+    CALLEXPR
+  };
+
+protected:
+  Expr::ExprType exprType;
+
 public:
   virtual const std::string &getType() const = 0;
   virtual void setType(const std::string &type) = 0;
+  Expr::ExprType getExprType() const;
 };
 
 /// A binary expression is a node in the AST that contains two other nodes "joined" by an operator
@@ -42,7 +62,6 @@ public:
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
-  std::shared_ptr<BinaryExpr> getptr();
 
   // Getters
   [[nodiscard]] const std::shared_ptr<Expr> &getLhs() const;
@@ -97,7 +116,6 @@ public:
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
-  std::shared_ptr<LiteralExpr> getptr();
 
   // Getters
   [[nodiscard]] const Token &getToken() const;

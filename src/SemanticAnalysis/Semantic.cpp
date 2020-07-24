@@ -1,4 +1,5 @@
 // TODO: add header of the file
+// TODO: semantic analysis has to transform AST to a better suited AST for code Generation
 #include "stoc/SemanticAnalysis/Semantic.h"
 
 #include "stoc/AST/Decl.h"
@@ -81,6 +82,7 @@ std::pair<bool, std::string> Semantic::isValidOperatorForNumericType(const Token
 std::pair<bool, std::string> Semantic::isValidOperatorForStringType(const Token &op,
                                                                     std::string typeOperands) {
   switch (op.type) {
+  // TODO: check if we can implement addition of strings in llvm ir
   case ADD:
     return std::make_pair(true, typeOperands);
   case EQUAL:
@@ -108,6 +110,7 @@ std::pair<bool, std::string> Semantic::isValidOperatorForBoolType(const Token &o
 // TODO: improve because we are using the token types from scanning and parsing in semantic analysis
 //  which has drawbacks, like the repetition of the concept type for many things. Maybe create new
 //  enum or class
+//  Also change and add type to other AST nodes like VarDecl, ParamDecl, etc..
 std::string Semantic::tokenTypeToType(TokenType tokenType) {
   switch (tokenType) {
   case LIT_TRUE:
@@ -140,6 +143,10 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
     exit(1);
   }
 
+  // Update information about if constant declaration is global
+  bool isGlobal = this->scopeLevel == 0;
+  node->setIsGlobal(isGlobal);
+
   // Update symbol table with new variable
   Symbol symbol(node->getIdentifier().value, Symbol::VARIABLE, node->getType().getTypeAsString());
   // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
@@ -160,6 +167,10 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
               << std::endl;
     exit(1);
   }
+
+  // Update information about if constant declaration is global
+  bool isGlobal = this->scopeLevel == 0;
+  node->setIsGlobal(isGlobal);
 
   // Update symbol table with new constant
   Symbol symbol(node->getIdentifier().value, Symbol::CONSTANT, node->getType().getTypeAsString());
