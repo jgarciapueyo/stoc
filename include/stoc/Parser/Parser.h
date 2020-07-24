@@ -25,7 +25,9 @@
 class Parser {
 private:
   std::shared_ptr<SrcFile> file;               /// stoc source file and list of tokens
-  std::vector<std::shared_ptr<BasicNode>> ast; /// abstract syntax tree
+
+  /// abstract syntax tree composed of a list of top-level declarations
+  std::vector<std::shared_ptr<Decl>> ast;
 
   // State of the parser
 

@@ -34,12 +34,14 @@ public:
                         /// (e.g a character was not recognized, quotes (") missing, ...)
 
   // Fields for storing data after the parsing phase
-  std::vector<std::shared_ptr<BasicNode>> ast; /// Abstract Syntax Tree representation
+  std::vector<std::shared_ptr<Decl>> ast; /// Abstract Syntax Tree representation
   bool errorInParsing; /// represents if an error has occurred during the parsing phase
                        /// (e.g. a malformed expression, closing parenthesis missing, ...)
 
   // Fields for the semantic analysis phase
-  bool errorInSemanticAnalysis;
+  bool errorInSemanticAnalysis; /// represents if an error has occurred during the semantic analysis
+                                /// phase (e.g types of an expression not matching, access to
+                                /// variable before it has been defined, ...)
 
 public:
   /// Constructor
@@ -56,8 +58,8 @@ public:
   void setTokens(const std::vector<Token> &t);
   [[nodiscard]] bool isErrorInScanning() const;
   void setErrorInScanning(bool error);
-  [[nodiscard]] const std::vector<std::shared_ptr<BasicNode>> &getAst() const;
-  void setAst(const std::vector<std::shared_ptr<BasicNode>> &ast_nodes);
+  [[nodiscard]] const std::vector<std::shared_ptr<Decl>> &getAst() const;
+  void setAst(const std::vector<std::shared_ptr<Decl>> &ast_nodes);
   [[nodiscard]] bool isErrorInParsing() const;
   void setErrorInParsing(bool error);
   [[nodiscard]] bool isErrorInSemanticAnalysis() const;

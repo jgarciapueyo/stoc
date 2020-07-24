@@ -48,8 +48,8 @@ const std::vector<Token> &SrcFile::getTokens() const { return tokens; }
 void SrcFile::setTokens(const std::vector<Token> &t) { this->tokens = t; }
 bool SrcFile::isErrorInScanning() const { return errorInScanning; }
 void SrcFile::setErrorInScanning(bool error) { this->errorInScanning = error; }
-const std::vector<std::shared_ptr<BasicNode>> &SrcFile::getAst() const { return ast; }
-void SrcFile::setAst(const std::vector<std::shared_ptr<BasicNode>> &ast_nodes) {
+const std::vector<std::shared_ptr<Decl>> &SrcFile::getAst() const { return ast; }
+void SrcFile::setAst(const std::vector<std::shared_ptr<Decl>> &ast_nodes) {
   this->ast = ast_nodes;
 }
 bool SrcFile::isErrorInParsing() const { return errorInParsing; }
@@ -57,5 +57,5 @@ void SrcFile::setErrorInParsing(bool error) { this->errorInParsing = error; }
 
 bool SrcFile::isErrorInSemanticAnalysis() const { return errorInSemanticAnalysis; }
 void SrcFile::setErrorInSemanticAnalysis(bool errorInSemanticAnalysis) {
-  SrcFile::errorInSemanticAnalysis = errorInSemanticAnalysis;
+  this->errorInSemanticAnalysis = errorInSemanticAnalysis;
 }
