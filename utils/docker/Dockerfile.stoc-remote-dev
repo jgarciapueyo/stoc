@@ -11,6 +11,7 @@ RUN apt-get update \
         python \
         openssh-server \
         rsync \
+        valgrind \
     && rm -rf /var/lib/apt/lists/*
 
 # Install packages related to LLVM toolchain

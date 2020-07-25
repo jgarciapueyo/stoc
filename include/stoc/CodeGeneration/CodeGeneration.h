@@ -43,6 +43,9 @@ private:
   llvm::BasicBlock *exitBB;
 
   // HELPER METHODS
+  void initialization();
+  void getExecutable();
+
   /// If Expr is an IdentExpr, it return the string of the identifier. If Expr is not an IdentExpr
   /// it ...
   // TODO: see what happens if node is not IdentExpr
