@@ -32,6 +32,9 @@ SrcFile::SrcFile(std::string &path) {
     this->ast = {};
     this->errorInParsing = false;
     this->errorInSemanticAnalysis = false;
+    this->context = nullptr;
+    this->module = nullptr;
+    this-> builder = nullptr;
   } else {
     ifs.close();
     throw std::runtime_error("Failed to open source file " + path);
@@ -49,13 +52,19 @@ void SrcFile::setTokens(const std::vector<Token> &t) { this->tokens = t; }
 bool SrcFile::isErrorInScanning() const { return errorInScanning; }
 void SrcFile::setErrorInScanning(bool error) { this->errorInScanning = error; }
 const std::vector<std::shared_ptr<Decl>> &SrcFile::getAst() const { return ast; }
-void SrcFile::setAst(const std::vector<std::shared_ptr<Decl>> &ast_nodes) {
-  this->ast = ast_nodes;
-}
+void SrcFile::setAst(const std::vector<std::shared_ptr<Decl>> &ast_nodes) { this->ast = ast_nodes; }
 bool SrcFile::isErrorInParsing() const { return errorInParsing; }
 void SrcFile::setErrorInParsing(bool error) { this->errorInParsing = error; }
 
 bool SrcFile::isErrorInSemanticAnalysis() const { return errorInSemanticAnalysis; }
 void SrcFile::setErrorInSemanticAnalysis(bool errorInSemanticAnalysis) {
   this->errorInSemanticAnalysis = errorInSemanticAnalysis;
+}
+const std::shared_ptr<llvm::LLVMContext> &SrcFile::getContext() const { return context; }
+void SrcFile::setContext(const std::shared_ptr<llvm::LLVMContext> &context) { this->context = context; }
+const std::shared_ptr<llvm::Module> &SrcFile::getModule() const { return module; }
+void SrcFile::setModule(const std::shared_ptr<llvm::Module> &module) { this->module = module; }
+const std::shared_ptr<llvm::IRBuilder<>> &SrcFile::getBuilder() const { return builder; }
+void SrcFile::setBuilder(const std::shared_ptr<llvm::IRBuilder<>> &builder) {
+  this->builder = builder;
 }

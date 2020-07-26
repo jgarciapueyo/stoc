@@ -2,19 +2,24 @@
 //
 //===--------------------------------------------------------------------===//
 //
-// This file defines the SrcFile class
+// This file defines the SrcFile class which groups the information at the end
+// of every phase to maintain it together in one place.
 //
 //===--------------------------------------------------------------------===//
 
 #ifndef STOC_SRCFILE_H
 #define STOC_SRCFILE_H
 
-#include "stoc/AST/BasicNode.h"
-#include "stoc/Scanner/Token.h"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/Module.h>
+
+#include "stoc/AST/BasicNode.h"
+#include "stoc/Scanner/Token.h"
 
 /// Representation of a Stoc source file
 class SrcFile {
@@ -43,6 +48,12 @@ public:
                                 /// phase (e.g types of an expression not matching, access to
                                 /// variable before it has been defined, ...)
 
+  // Fields for the code generation phase
+  // LLVM specific structures to store the LLVM IR generated in the Code Generation phase
+  std::shared_ptr<llvm::LLVMContext> context;
+  std::shared_ptr<llvm::Module> module;
+  std::shared_ptr<llvm::IRBuilder<>> builder;
+
 public:
   /// Constructor
   /// \field path - path where the source file is stored
@@ -64,6 +75,12 @@ public:
   void setErrorInParsing(bool error);
   [[nodiscard]] bool isErrorInSemanticAnalysis() const;
   void setErrorInSemanticAnalysis(bool errorInSemanticAnalysis);
+  [[nodiscard]] const std::shared_ptr<llvm::LLVMContext> &getContext() const;
+  void setContext(const std::shared_ptr<llvm::LLVMContext> &context);
+  [[nodiscard]] const std::shared_ptr<llvm::Module> &getModule() const;
+  void setModule(const std::shared_ptr<llvm::Module> &module);
+  [[nodiscard]] const std::shared_ptr<llvm::IRBuilder<>> &getBuilder() const;
+  void setBuilder(const std::shared_ptr<llvm::IRBuilder<>> &builder);
 };
 
 #endif // STOC_SRCFILE_H
