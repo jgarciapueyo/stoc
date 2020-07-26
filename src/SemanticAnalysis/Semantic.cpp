@@ -61,7 +61,7 @@ std::pair<bool, std::string> Semantic::isValidOperatorForType(const Token &op,
 
 std::pair<bool, std::string> Semantic::isValidOperatorForNumericType(const Token &op,
                                                                      std::string typeOperands) {
-  switch (op.type) {
+  switch (op.tokenType) {
   case ADD:
   case SUB:
   case STAR:
@@ -81,7 +81,7 @@ std::pair<bool, std::string> Semantic::isValidOperatorForNumericType(const Token
 
 std::pair<bool, std::string> Semantic::isValidOperatorForStringType(const Token &op,
                                                                     std::string typeOperands) {
-  switch (op.type) {
+  switch (op.tokenType) {
   // TODO: check if we can implement addition of strings in llvm ir
   case ADD:
     return std::make_pair(true, typeOperands);
@@ -95,7 +95,7 @@ std::pair<bool, std::string> Semantic::isValidOperatorForStringType(const Token 
 
 std::pair<bool, std::string> Semantic::isValidOperatorForBoolType(const Token &op,
                                                                   std::string typeOperands) {
-  switch (op.type) {
+  switch (op.tokenType) {
   case LAND:
   case LOR:
   case NOT:
@@ -135,7 +135,7 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
   analyse(value);
 
   // Type checking
-  if (node->getType().getTypeAsString() != node->getValue()->getType()) {
+  if (to_string(node->getType().tokenType) != node->getValue()->getType()) {
     // TODO: improve error handling
     std::cerr << "Type checking: different types " << node->getVarKeyword().value << " <l."
               << node->getVarKeyword().line << ":c." << node->getVarKeyword().column << ">"
@@ -148,7 +148,7 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new variable
-  Symbol symbol(node->getIdentifier().value, Symbol::VARIABLE, node->getType().getTypeAsString());
+  Symbol symbol(node->getIdentifier().value, Symbol::VARIABLE, to_string(node->getType().tokenType));
   // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
   //  right now, we first insert and later assign so is permitted, maybe better to flip
   //  the following two actions
@@ -160,7 +160,7 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   analyse(node->getValue());
 
   // Type checking
-  if (node->getType().getTypeAsString() != node->getValue()->getType()) {
+  if (to_string(node->getType().tokenType) != node->getValue()->getType()) {
     // TODO: improve error handling
     std::cerr << "Type checking: different types " << node->getConstKeyword().value << " <l."
               << node->getConstKeyword().line << ":c." << node->getConstKeyword().column << ">"
@@ -173,7 +173,7 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new constant
-  Symbol symbol(node->getIdentifier().value, Symbol::CONSTANT, node->getType().getTypeAsString());
+  Symbol symbol(node->getIdentifier().value, Symbol::CONSTANT, to_string(node->getType().tokenType));
   // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
   //  right now, we first insert and later assign so is permitted, maybe better to flip
   //  the following two actions
@@ -182,7 +182,7 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
 
 void Semantic::visit(std::shared_ptr<ParamDecl> node) {
   // Update symbol table with new constant
-  Symbol symbol(node->getIdentifier().value, Symbol::PARAMETER, node->getType().getTypeAsString());
+  Symbol symbol(node->getIdentifier().value, Symbol::PARAMETER, to_string(node->getType().tokenType));
   symbolTable->insert(symbol.getIdentifier(), symbol);
 }
 
@@ -190,12 +190,12 @@ void Semantic::visit(std::shared_ptr<FuncDecl> node) {
   Semantic::FunctionType previousFunctionType = functionType;
   functionType = Semantic::FUNCTION;
   // TODO: check if make returnType a class or enum instead of string
-  returnType = node->isHasReturnType() ? node->getReturnType().getTypeAsString() : "void";
+  returnType = node->isHasReturnType() ? to_string(node->getReturnType().tokenType) : "void";
 
   // Need type of arguments to check later when function is called
   std::vector<std::string> parameterListType;
   for (const auto &parameter : node->getParams()) {
-    parameterListType.push_back(parameter->getType().getTypeAsString());
+    parameterListType.push_back(to_string(parameter->getType().tokenType));
   }
 
   // Insert function identifier in scope
@@ -374,7 +374,7 @@ void Semantic::visit(std::shared_ptr<UnaryExpr> node) {
 }
 
 void Semantic::visit(std::shared_ptr<LiteralExpr> node) {
-  std::string type = tokenTypeToType(node->getToken().type);
+  std::string type = tokenTypeToType(node->getToken().tokenType);
   node->setType(type);
 }
 

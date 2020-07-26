@@ -10,11 +10,10 @@
 
 #include <iomanip>
 #include <iostream>
-#include <utility>
 #include <vector>
 
-std::string typeAsString(TokenType type) {
-  static std::vector<std::string> stringRepresentation = {
+std::string to_string(TokenType type) {
+  std::vector<std::string> TokenTypeAsString = {
       "'+'",       "'-'",        "'*'",     "'/'",        "'&&'",     "'||'",      "'!'",
       "'='",       "'=='",       "'!='",    "'<'",        "'>'",      "'<='",      "'>='",
       "'('",       "')'",        "'{'",     "'}'",        "';'",      "','",       "var",
@@ -22,11 +21,11 @@ std::string typeAsString(TokenType type) {
       "bool",      "int",        "float",   "string",     "LIT_TRUE", "LIT_FALSE", "LIT_INT",
       "LIT_FLOAT", "LIT_STRING", "LIT_NIL", "IDENTIFIER", "ILLEGAL",  "T_EOF"};
 
-  return stringRepresentation[type];
+  return TokenTypeAsString[type];
 }
 
 std::ostream &operator<<(std::ostream &os, TokenType type) {
-  os << typeAsString(type);
+  os << to_string(type);
   return os;
 }
 
@@ -55,33 +54,15 @@ int tokenPrec(TokenType type) {
 }
 
 Token::Token(TokenType type, int begin, int line, int column, std::string value)
-    : type(type), begin(begin), line(line), column(column), value(std::move(value)) {}
+    : tokenType(type), begin(begin), line(line), column(column), value(std::move(value)) {}
 
 Token::Token(TokenType type, int begin, int line, int column)
-    : type(type), begin(begin), line(line), column(column) {}
+    : tokenType(type), begin(begin), line(line), column(column) {}
 
 Token::Token() = default;
 
-std::string Token::getTypeAsString() const { return typeAsString(this->type); }
-
-bool Token::operator==(const Token &other) const {
-  return (this->type == other.type) && (this->begin == other.begin) && (this->line == other.line) &&
-         (this->column == other.column) && (this->value == other.value);
-}
-
 std::ostream &operator<<(std::ostream &os, const Token &t) {
   os << std::setw(5) << t.line << " " << std::setw(4) << t.begin << " " << std::setw(10) << t.value
-     << " " << t.type;
+     << " " << to_string(t.tokenType);
   return os;
-}
-
-// TODO: delete if not necessary
-namespace std {
-// Custom Hash Function for Token
-template<>
-struct hash<Token> {
-  std::size_t operator()(const Token &t) const noexcept {
-    return std::hash<std::string>{}(t.value);
-  }
-};
 }

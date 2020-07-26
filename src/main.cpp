@@ -90,6 +90,8 @@ int main(int argc, char *argv[]) {
     CodeGeneration codegen(src);
     codegen.generate();
 
+    // LLVM IR to executable
+
   }
   catch(std::exception& e) {
     std::cerr << e.what() << std::endl;

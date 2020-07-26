@@ -55,7 +55,7 @@ void CodeGeneration::generate() {
 
   //std::cout << std::endl;
   //std::cout << std::endl;
-  //module->print(llvm::errs(), nullptr);
+  module->print(llvm::errs(), nullptr);
 }
 
 void CodeGeneration::getExecutable() {

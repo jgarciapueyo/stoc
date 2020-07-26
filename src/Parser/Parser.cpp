@@ -30,7 +30,7 @@ void Parser::parse() {
 //------- Declarations -------
 
 std::shared_ptr<Decl> Parser::parseDecl() {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case VAR:
   case CONST:
     return parseVarConstDecl();
@@ -46,12 +46,12 @@ std::shared_ptr<Decl> Parser::parseVarConstDecl() {
   Token varConstKeyword = advance();
   Token type = parseType();
   Token identifier = consume(IDENTIFIER, "Expected identifier after " +
-                                             varConstKeyword.getTypeAsString() + " declaration");
-  consume(ASSIGN, "Expected '=' after " + varConstKeyword.getTypeAsString() + " declaration");
+                                             to_string(varConstKeyword.tokenType) + " declaration");
+  consume(ASSIGN, "Expected '=' after " + to_string(varConstKeyword.tokenType) + " declaration");
   std::shared_ptr<Expr> value = parseExpr();
   consume(SEMICOLON, "Expected ';' after variable declaration");
 
-  if (varConstKeyword.type == VAR) {
+  if (varConstKeyword.tokenType == VAR) {
     return std::make_shared<VarDecl>(varConstKeyword, identifier, type, value);
   } else {
     return std::make_shared<ConstDecl>(varConstKeyword, identifier, type, value);
@@ -78,7 +78,7 @@ std::shared_ptr<Decl> Parser::parseFuncDecl() {
 //------- Statements -------
 
 std::shared_ptr<Stmt> Parser::parseStmt() {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case LBRACE:
     return parseBlockStmt();
   case IF:
@@ -95,7 +95,7 @@ std::shared_ptr<Stmt> Parser::parseStmt() {
 }
 
 std::shared_ptr<Stmt> Parser::parseSimpleStmt(bool semicolonExp) {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case CONST:
   case VAR: {
     std::shared_ptr<Decl> decl = parseDecl();
@@ -142,7 +142,7 @@ std::shared_ptr<Stmt> Parser::parseIfStmt() {
 
   std::shared_ptr<Stmt> elseBranch = nullptr;
   if (match(ELSE)) {
-    switch (currentToken().type) {
+    switch (currentToken().tokenType) {
     case IF:
       elseBranch = parseIfStmt();
       break;
@@ -228,9 +228,9 @@ std::shared_ptr<Expr> Parser::parseBinaryExpr(int prec) {
   // and unary operations. Also additions(ADD) and substractions(SUB) [left-associativity] while
   // creating the AST)
   Token op = currentToken();
-  while (tokenPrec(op.type) >= prec) {
+  while (tokenPrec(op.tokenType) >= prec) {
     advance();
-    std::shared_ptr<Expr> rhs = parseBinaryExpr(tokenPrec(op.type) + 1);
+    std::shared_ptr<Expr> rhs = parseBinaryExpr(tokenPrec(op.tokenType) + 1);
     e = std::make_shared<BinaryExpr>(e, rhs, op);
     op = this->file->getTokens()[current];
   }
@@ -239,7 +239,7 @@ std::shared_ptr<Expr> Parser::parseBinaryExpr(int prec) {
 }
 
 std::shared_ptr<Expr> Parser::parseUnaryExpr() {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case ADD: // we allow ADD(+) as unary operator
   case SUB:
   case NOT:
@@ -254,7 +254,7 @@ std::shared_ptr<Expr> Parser::parseUnaryExpr() {
 std::shared_ptr<Expr> Parser::parsePrimaryExpr() {
   std::shared_ptr<Expr> operand = parseOperand();
 
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case LPAREN: { // it is a function call
     std::vector<std::shared_ptr<Expr>> args = parseArgs();
     return std::make_shared<CallExpr>(operand, args);
@@ -267,14 +267,14 @@ std::shared_ptr<Expr> Parser::parsePrimaryExpr() {
 // HELPER METHODS
 
 Token Parser::parseType() {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case BOOL:
   case INT:
   case FLOAT:
   case STRING:
     return advance();
   default:
-    reportError("Expected type: " + currentToken().getTypeAsString() + " is not a type");
+    reportError("Expected type: " + to_string(currentToken().tokenType) + " is not a type");
   }
 }
 
@@ -317,7 +317,7 @@ std::vector<std::shared_ptr<Expr>> Parser::parseArgs() {
 }
 
 std::shared_ptr<Expr> Parser::parseOperand() {
-  switch (currentToken().type) {
+  switch (currentToken().tokenType) {
   case LIT_TRUE:
   case LIT_FALSE:
   case LIT_INT:
@@ -350,7 +350,7 @@ void Parser::reportError(std::string error_msg) {
 }
 
 bool Parser::isAtEnd() {
-  return (currentToken().type == T_EOF) || (this->current >= this->file->getTokens().size());
+  return (currentToken().tokenType == T_EOF) || (this->current >= this->file->getTokens().size());
 }
 
 Token Parser::currentToken() { return this->file->getTokens()[current]; }
@@ -367,7 +367,7 @@ bool Parser::check(TokenType type) {
   if (isAtEnd()) {
     return false;
   } else {
-    return currentToken().type == type;
+    return currentToken().tokenType == type;
   }
 }
 

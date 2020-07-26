@@ -13,6 +13,9 @@
 
 /// Representation of the types a token can be
 enum TokenType {
+  // To add a new TokenType, it must be added here and in TokenTypeAsString vector [Token.cpp] (in
+  // the same relative order to other token) to store the string representation
+
   // Operators
   ADD,   // +
   SUB,   // -
@@ -71,9 +74,14 @@ enum TokenType {
   T_EOF    // end of file
 };
 
+/// returns the type of the token \type as a string: e.g. EQUAL -> '==', LPAREN -> '('
+std::string to_string(TokenType type);
+std::ostream &operator<<(std::ostream &os, TokenType type);
+
 /// Representation of the precedence of TokenTypes
 /// e.g. A FACTOR (*, /) binds tighter than a TERM(+,/) so it has higher precedence
-/// Important: all equality and comparison have the same precedence (different from C precedence)
+/// Important: all equality and comparison have the same precedence (different from C precedence).
+///            This implies that parenthesis is mandatory to indicate the precedence correctly.
 enum Prec {
   PREC_LOWEST,   // 0 (non operators)
   PREC_OR,       // 1 Token: LOR
@@ -87,11 +95,6 @@ enum Prec {
 /// returns the precedence of \param type (as a binary operator)
 int tokenPrec(TokenType type);
 
-/// returns the type of the token \type as a string: e.g. EQUAL -> '==', LPAREN -> '('
-std::string typeAsString(TokenType type);
-
-std::ostream &operator<<(std::ostream &os, TokenType type);
-
 /// Representation of a token.
 /// It contains a type and the string representing its value.
 class Token {
@@ -102,13 +105,8 @@ public:
 
   Token();
 
-  [[nodiscard]] std::string getTypeAsString() const;
-
-  // TODO: delete if not necessary
-  bool operator==(const Token &other) const;
-
 public:
-  TokenType type;
+  TokenType tokenType;
 
   /// position where the token starts in the raw source code
   int begin{};
@@ -119,9 +117,8 @@ public:
   /// column of the line where the token starts in the raw source code
   int column{};
 
-  /// value of the token
-  /// (e.g. for ADD is '+', for INT is 'int',
-  ///     for an identifier is the string representing it 'identifier)
+  /// value of the token. (e.g. for ADD is '+', for INT is 'int',
+  /// for an identifier is the string representing it 'identifier)
   std::string value;
 };
 

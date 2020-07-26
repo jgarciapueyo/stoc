@@ -23,7 +23,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<BinaryExpr> &node) {
   std::string typeOfOperands = node->getLhs()->getType();
 
   if (typeOfOperands == "int") {
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case ADD:
       return builder->CreateAdd(lhs, rhs, "addtemp");
     case SUB:
@@ -46,7 +46,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<BinaryExpr> &node) {
       return builder->CreateICmpSGE(lhs, rhs, "greatereqtmp");
     }
   } else if (typeOfOperands == "float") {
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case ADD:
       return builder->CreateFAdd(lhs, rhs, "addtemp");
     case SUB:
@@ -70,7 +70,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<BinaryExpr> &node) {
     }
   } else if (typeOfOperands == "bool") {
     // TODO: improvement: see how to do it for shortcircuit logical operators
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case LAND:
       return builder->CreateAnd(lhs, rhs, "andtemp");
     case LOR:
@@ -85,7 +85,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<UnaryExpr> &node) {
   llvm::Value *rhs = CodeGeneration::generate(node->getRhs());
 
   if (node->getType() == "int") {
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case ADD:
       return rhs; // if +Expr is the same as Expr
     case SUB: {
@@ -95,7 +95,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<UnaryExpr> &node) {
     }
     }
   } else if (node->getType() == "float") {
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case ADD:
       return rhs; // if +Expr is the same as Expr
     case SUB: {
@@ -105,7 +105,7 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<UnaryExpr> &node) {
     }
     }
   } else if (node->getType() == "bool") {
-    switch (node->getOp().type) {
+    switch (node->getOp().tokenType) {
     case NOT:
       return builder->CreateNot(rhs, "nottemp");
     }
