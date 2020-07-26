@@ -1,40 +1,42 @@
-//===- stoc/Scanner/Scanner.h - Defintion of Scanner class --------*- C++ -*-===//
+//===- stoc/Scanner/Scanner.h - Defintion of Scanner class --------------------------*- C++ -*-===//
 //
-//===------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file defines the Scanner class.
-// Scanning is the first phase of a compiler and transforms the raw source code
-// into a list of tokens such as ADD, SUB, IDENTIFIER, ...
+// Scanning is the first phase of a compiler and transforms the raw source code into a list of
+// tokens such as ADD, SUB, IDENTIFIER, ...
 //
-//===------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #ifndef STOC_SCANNER_H
 #define STOC_SCANNER_H
-
-#include "Token.h"
-#include "stoc/SrcFile/SrcFile.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-/// A Scanner takes Stoc source code and tokenize it
+#include "stoc/Scanner/Token.h"
+#include "stoc/SrcFile/SrcFile.h"
+
+/// A Scanner takes Stoc source code and tokenizes it
 class Scanner {
 private:
   std::shared_ptr<SrcFile> file; /// stoc source file
-  std::vector<Token> tokens; /// list of tokens
+  std::vector<Token> tokens;     /// list of tokens
 
   // State of the scanner
 
   // The scanner works by incrementing the \current counter. When it believes the string from \start
   // to \current could be a token, it creates it and updates \start to \current, and starts again.
-  int start; /// start of token
+  int start;   /// start of token
   int current; /// current character being analyzed
 
-  int line; /// line of source code where \current is
-  int column; /// column of the current line of source code where \current is
+  int line;        /// line of source code where \current is
+  int column;      /// column of the current line of source code where \current is
+  int lineStart;   /// line of source code where \start is
+  int columnStart; /// line of source code where \current is
 
-  // Helper methods
+  // HELPER METHODS
 
   /// true if \c is between 0-9
   [[nodiscard]] static bool isDigit(char c);
@@ -46,7 +48,7 @@ private:
   [[nodiscard]] static bool isAlphaNum(char c);
 
   /// prints the error \error_msg
-  void reportError(const std::string& msg);
+  void reportError(const std::string &msg);
 
   /// updates \start counter to the position of \current counter
   void updateStart();
@@ -101,6 +103,9 @@ public:
   /// main method: scans the source code and transforms it into a list of tokens
   ///  (the list of tokens is stored in SrcFile file)
   void scan();
+
+  /// prints the scanned tokens
+  void printTokens();
 };
 
 #endif // STOC_SCANNER_H

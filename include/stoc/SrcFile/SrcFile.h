@@ -1,11 +1,11 @@
-//===- stoc/SrcFile.h - Defintion of the SrcFile class --------*- C++ -*-===//
+//===- stoc/SrcFile/SrcFile.h - Defintion of the SrcFile class ------------------------ C++ -*-===//
 //
-//===--------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
-// This file defines the SrcFile class which groups the information at the end
-// of every phase to maintain it together in one place.
+// This file defines the SrcFile class which groups the information at the end of every phase to
+// maintain it together in one place.
 //
-//===--------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #ifndef STOC_SRCFILE_H
 #define STOC_SRCFILE_H
@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/IRBuilder.h>
+#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 
 #include "stoc/AST/BasicNode.h"
@@ -24,19 +24,18 @@
 /// Representation of a Stoc source file
 class SrcFile {
 public:
-
   std::string path;
   std::string directory;
   std::string filename;
 
   // Fields for storing raw source data
   std::string data; /// textual information of the source file
-  int length; /// length of the source file
+  int length;       /// length of the source file
 
   // Fields for storing data after the scanning phase
   std::vector<Token> tokens; /// list of tokens of the source file
-  bool errorInScanning; /// represents if an error has occurred during the scanning phase
-                        /// (e.g a character was not recognized, quotes (") missing, ...)
+  bool errorInScanning;      /// represents if an error has occurred during the scanning phase
+                             /// (e.g a character was not recognized, quotes (") missing, ...)
 
   // Fields for storing data after the parsing phase
   std::vector<std::shared_ptr<Decl>> ast; /// Abstract Syntax Tree representation

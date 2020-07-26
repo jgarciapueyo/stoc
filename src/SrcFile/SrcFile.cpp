@@ -1,10 +1,10 @@
-//===- stoc/SrcFile.cpp - Implementation of the SrcFile class --------*- C++ -*-===//
+//===- src/SrcFile/SrcFile.cpp - Implementation of the SrcFile class ----------------*- C++ -*-===//
 //
-//===---------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file implements the SrcFile class
 //
-//===---------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #include "stoc/SrcFile/SrcFile.h"
 
@@ -34,7 +34,7 @@ SrcFile::SrcFile(std::string &path) {
     this->errorInSemanticAnalysis = false;
     this->context = nullptr;
     this->module = nullptr;
-    this-> builder = nullptr;
+    this->builder = nullptr;
   } else {
     ifs.close();
     throw std::runtime_error("Failed to open source file " + path);
@@ -61,7 +61,9 @@ void SrcFile::setErrorInSemanticAnalysis(bool errorInSemanticAnalysis) {
   this->errorInSemanticAnalysis = errorInSemanticAnalysis;
 }
 const std::shared_ptr<llvm::LLVMContext> &SrcFile::getContext() const { return context; }
-void SrcFile::setContext(const std::shared_ptr<llvm::LLVMContext> &context) { this->context = context; }
+void SrcFile::setContext(const std::shared_ptr<llvm::LLVMContext> &context) {
+  this->context = context;
+}
 const std::shared_ptr<llvm::Module> &SrcFile::getModule() const { return module; }
 void SrcFile::setModule(const std::shared_ptr<llvm::Module> &module) { this->module = module; }
 const std::shared_ptr<llvm::IRBuilder<>> &SrcFile::getBuilder() const { return builder; }

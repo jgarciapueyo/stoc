@@ -1,10 +1,12 @@
-//===- stoc/Scanner/Scanner.cpp - Implementation of Scanner class --------*- C++ -*-===//
+//===- src/Scanner/Scanner.cpp - Implementation of Scanner class -------------------*- C++ -*-===//
 //
-//===-------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file implements the Scanner class.
+// Scanning is the first phase of a compiler and transforms the raw source code into a list of
+// tokens such as ADD, SUB, IDENTIFIER, ...
 //
-//===-------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #include "stoc/Scanner/Scanner.h"
 
@@ -16,18 +18,28 @@ Scanner::Scanner(std::shared_ptr<SrcFile> file) : file(std::move(file)), tokens(
   this->current = 0;
   this->line = 1;
   this->column = 1;
+  this->lineStart = 1;
+  this->columnStart = 1;
 }
 
 void Scanner::scan() {
   while (!isAtEnd()) {
-    // TODO: make that scanNextToken returns the token and here do tokens.push_back(scanNextToken())
-    //   or directly this->file->tokens.push_back(scanNextToken) so it is more similar to the parser
     scanNextToken();
   }
 
   updateStart(); // needed to correctly add T_EOF
   tokens.push_back(makeToken(T_EOF));
   this->file->setTokens(this->tokens);
+}
+
+void Scanner::printTokens() {
+  if (!tokens.empty()) {
+    for (const auto &token : tokens) {
+      std::cout << token << std::endl;
+    }
+  } else {
+    std::cout << "No token has been parsed" << std::endl;
+  }
 }
 
 bool Scanner::isDigit(char c) { return '0' <= c && c <= '9'; }
@@ -39,13 +51,17 @@ bool Scanner::isAlpha(char c) {
 bool Scanner::isAlphaNum(char c) { return isDigit(c) || isAlpha(c); }
 
 void Scanner::reportError(const std::string &msg) {
-  std::cerr << "<" << this->file->getFilename() << ":l." << this->line << ">"
-            << " error: " << this->file->getData().at(this->start) << " " << msg << std::endl;
+  std::cerr << "<" << this->file->getFilename() << ":l." << this->lineStart << ":c"
+            << this->columnStart << "> Scanning error: " << msg << std::endl;
 
   this->file->setErrorInScanning(true);
 }
 
-void Scanner::updateStart() { this->start = this->current; }
+void Scanner::updateStart() {
+  this->start = this->current;
+  this->lineStart = this->line;
+  this->columnStart = this->column;
+}
 
 bool Scanner::isAtEnd() const { return this->current >= this->file->getLength(); }
 
@@ -76,6 +92,10 @@ char Scanner::advance() {
 }
 
 TokenType Scanner::tokenType() {
+  // TODO: (improvement code) define keywords in Token.h so everything related to TokenTypes and its
+  //       string representation is together inside a file. For example, if we change func to def
+  //       we would have to change it in that file twice and another here. Better if is all in one
+  //       file
   std::string identifier = this->file->getData().substr(start, current - start);
   if (identifier == "var") {
     return VAR;
@@ -113,15 +133,13 @@ TokenType Scanner::tokenType() {
 }
 
 Token Scanner::makeToken(TokenType type) const {
-  int columnStart = this->column - (this->current - this->start);
-  return Token(type, this->start, this->line, columnStart,
+  return Token(type, this->start, this->line, this->columnStart,
                this->file->getData().substr(start, current - start));
 }
 
 Token Scanner::makeErrorToken(std::string errorMsg = "") {
   reportError(errorMsg);
-  int columnStart = this->column - (this->current - this->start);
-  return Token(ILLEGAL, this->start, this->line, columnStart, std::move(errorMsg));
+  return Token(ILLEGAL, this->start, this->line, this->columnStart, std::move(errorMsg));
 }
 
 void Scanner::skipWhiteSpaces() {
@@ -145,7 +163,7 @@ void Scanner::skipWhiteSpaces() {
 }
 
 void Scanner::scanNumber() {
-  // TODO: support numbers as 1_000_000 with underscore _
+  // TODO: (Improvement) support numbers as 1_000_000 with underscore _
   // integer part
   while (isDigit(peek())) {
     advance();
@@ -191,7 +209,7 @@ void Scanner::scanLineComment() {
 }
 
 void Scanner::scanString() {
-  // TODO: improve string recognition with escape sequences
+  // TODO: (Improvement) string recognition with escape sequences
   // Multi line strings are supported
   // first quotes defining the string have been treated
   while (peek() != '"' && !isAtEnd()) {
@@ -205,6 +223,7 @@ void Scanner::scanString() {
   if (isAtEnd()) {
     tokens.push_back(makeErrorToken("missing \" character for defining strings"));
   } else {
+    advance(); // advance to process ending quotes
     tokens.push_back(makeToken(LIT_STRING));
   }
 }
@@ -216,7 +235,7 @@ void Scanner::scanNextToken() {
   char c = peek();
   if (isDigit(c)) {
     scanNumber();
-  } else if (isAlpha(c)) { // identifiers must start with alphabet character
+  } else if (isAlpha(c)) { // identifiers must start with alphabet character or underscore
     scanIdentifier();
   } else {
     advance(); // make progress

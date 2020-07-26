@@ -1,10 +1,10 @@
-//===- Scanner/Token.cpp - Implementation of Token related constructs --------*- C++ -*-===//
+//===- src/Scanner/Token.cpp - Implementation of Token related constructs -----------*- C++ -*-===//
 //
-//===---------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file implements functions related to TokenType enum and Token class
 //
-//===--------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #include "stoc/Scanner/Token.h"
 
@@ -62,7 +62,7 @@ Token::Token(TokenType type, int begin, int line, int column)
 Token::Token() = default;
 
 std::ostream &operator<<(std::ostream &os, const Token &t) {
-  os << std::setw(5) << t.line << " " << std::setw(4) << t.begin << " " << std::setw(10) << t.value
-     << " " << to_string(t.tokenType);
+  os << std::setw(5) << t.line << " " << std::setw(4) << t.column << " " << std::setw(10)
+     << t.value << " " << to_string(t.tokenType);
   return os;
 }

@@ -1,10 +1,10 @@
-//===- stoc/Scanner/Token.h - Defintion of Token related constructs --------*- C++ -*-===//
+//===- stoc/Scanner/Token.h - Defintion of Token related constructs -----------------*- C++ -*-===//
 //
-//===---------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file defines the TokenType enum and Token class
 //
-//===--------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 
 #ifndef STOC_TOKEN_H
 #define STOC_TOKEN_H
@@ -70,6 +70,7 @@ enum TokenType {
   IDENTIFIER, //
 
   // Special tokens
+  // TODO: (Improvement) consider creating a comment TokenType
   ILLEGAL, // tokens that are not allowed or errors
   T_EOF    // end of file
 };
