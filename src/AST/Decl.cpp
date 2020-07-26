@@ -1,14 +1,21 @@
-// TODO: add header of the file
+//===- src/AST/Decl.cpp - Implementation of nodes related to Declarations in AST ----*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the classes of nodes related to declarations in AST.
+//
+//===------------------------------------------------------------------------------------------===//
+
 #include "stoc/AST/Decl.h"
 
 // Decl node
-Decl::DeclType Decl::getDeclType() const { return declType; }
+Decl::Decl(Decl::Kind declKind) : declKind(declKind) {}
+Decl::Kind Decl::getDeclKind() const { return declKind; }
 
 // Variable Declaration node
 VarDecl::VarDecl(Token varKeyword, Token identifier, Token type, std::shared_ptr<Expr> value)
-    : varKeyword(varKeyword), identifier(identifier), type(type), value(value) {
-  declType = Decl::VARDECL;
-}
+    : varKeyword(varKeyword), identifier(identifier), type(type), value(value),
+      Decl(Decl::Kind::VARDECL) {}
 
 void VarDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<VarDecl>(Decl::shared_from_this()));
@@ -23,9 +30,8 @@ void VarDecl::setIsGlobal(bool isGlobal) { this->isGlobalVariable = isGlobal; }
 
 // Constant Declaration node
 ConstDecl::ConstDecl(Token constKeyword, Token identifier, Token type, std::shared_ptr<Expr> value)
-    : constKeyword(constKeyword), identifier(identifier), type(type), value(value) {
-  declType = Decl::CONSTDECL;
-}
+    : constKeyword(constKeyword), identifier(identifier), type(type), value(value),
+      Decl(Decl::Kind::CONSTDECL) {}
 
 void ConstDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<ConstDecl>(Decl::shared_from_this()));
@@ -40,9 +46,7 @@ void ConstDecl::setIsGlobal(bool isGlobal) { this->isGlobalConstant = isGlobal; 
 
 // Parameter Declaration node
 ParamDecl::ParamDecl(Token keyword, Token type, Token identifier)
-    : keyword(keyword), type(type), identifier(identifier) {
-  declType = Decl::PARAMDECL;
-}
+    : keyword(keyword), type(type), identifier(identifier), Decl(Decl::Kind::PARAMDECL) {}
 
 void ParamDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<ParamDecl>(Decl::shared_from_this()));
@@ -57,16 +61,12 @@ FuncDecl::FuncDecl(Token funcKeyword, Token identifier,
                    std::vector<std::shared_ptr<ParamDecl>> params, Token returnType,
                    std::shared_ptr<BlockStmt> body)
     : funcKeyword(funcKeyword), identifier(identifier), params(params), returnType(returnType),
-      body(body), hasReturnType(true) {
-  declType = Decl::FUNCDECL;
-}
+      body(body), hasReturnType(true), Decl(Decl::Kind::FUNCDECL) {}
 
 FuncDecl::FuncDecl(Token funcKeyword, Token identifier,
                    std::vector<std::shared_ptr<ParamDecl>> params, std::shared_ptr<BlockStmt> body)
     : funcKeyword(funcKeyword), identifier(identifier), params(params), body(body),
-      hasReturnType(false) {
-  declType = Decl::FUNCDECL;
-}
+      hasReturnType(false), Decl(Decl::Kind::FUNCDECL) {}
 
 void FuncDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<FuncDecl>(Decl::shared_from_this()));

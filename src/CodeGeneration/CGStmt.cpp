@@ -1,22 +1,22 @@
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 void CodeGeneration::generate(const std::shared_ptr<Stmt> &node) {
-  switch (node->getStmtType()) {
-  case Stmt::DECLARATIONSTMT:
+  switch (node->getStmtKind()) {
+  case Stmt::Kind::DECLARATIONSTMT:
     return generate(std::static_pointer_cast<DeclarationStmt>(node));
-  case Stmt::EXPRESSIONSTMT:
+  case Stmt::Kind::EXPRESSIONSTMT:
     return generate(std::static_pointer_cast<ExpressionStmt>(node));
-  case Stmt::BLOCKSTMT:
+  case Stmt::Kind::BLOCKSTMT:
     return generate(std::static_pointer_cast<BlockStmt>(node));
-  case Stmt::IFSTMT:
+  case Stmt::Kind::IFSTMT:
     return generate(std::static_pointer_cast<IfStmt>(node));
-  case Stmt::FORSTMT:
+  case Stmt::Kind::FORSTMT:
     return generate(std::static_pointer_cast<ForStmt>(node));
-  case Stmt::WHILESTMT:
+  case Stmt::Kind::WHILESTMT:
     return generate(std::static_pointer_cast<WhileStmt>(node));
-  case Stmt::ASSIGNMENTSTMT:
+  case Stmt::Kind::ASSIGNMENTSTMT:
     return generate(std::static_pointer_cast<AssignmentStmt>(node));
-  case Stmt::RETURNSTMT:
+  case Stmt::Kind::RETURNSTMT:
     return generate(std::static_pointer_cast<ReturnStmt>(node));
   }
 }
@@ -61,7 +61,7 @@ void CodeGeneration::generate(const std::shared_ptr<IfStmt> &node) {
 
     // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
     // branch to the continuation of the ifStmt is added
-    if(!thenBB->getTerminator()) {
+    if (!thenBB->getTerminator()) {
       builder->CreateBr(mergeBB);
     }
 
@@ -72,7 +72,7 @@ void CodeGeneration::generate(const std::shared_ptr<IfStmt> &node) {
 
     // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
     // branch to the continuation of the ifStmt is added
-    if(!elseBB->getTerminator()) {
+    if (!elseBB->getTerminator()) {
       builder->CreateBr(mergeBB);
     }
 
@@ -94,7 +94,7 @@ void CodeGeneration::generate(const std::shared_ptr<IfStmt> &node) {
 
     // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
     // branch to the continuation of the ifStmt is added
-    if(!thenBB->getTerminator()) {
+    if (!thenBB->getTerminator()) {
       builder->CreateBr(mergeBB);
     }
 
@@ -169,22 +169,20 @@ void CodeGeneration::generate(const std::shared_ptr<WhileStmt> &node) {
 }
 
 void CodeGeneration::generate(const std::shared_ptr<AssignmentStmt> &node) {
-  llvm::Value* rhs = generate(node->getRhs());
+  llvm::Value *rhs = generate(node->getRhs());
   std::string lhsName = getIdentifier(node->getLhs());
   // TODO: refactor how to look for lhs name (maybe its not a IdentExpr)
   auto lhslocal = localVariables.find(lhsName);
-  if(lhslocal != localVariables.end()) {
+  if (lhslocal != localVariables.end()) {
     // assignment to local variable
     builder->CreateStore(rhs, lhslocal->second);
-  }
-  else {
+  } else {
     // LHS is not local variable, check if it is global
     auto lhsglobal = globalVariables.find(lhsName);
-    if(lhsglobal != globalVariables.end()) {
+    if (lhsglobal != globalVariables.end()) {
       builder->CreateStore(rhs, lhsglobal->second);
-    }
-    else {
-      //TODO: handle what happens if lhs does not exist
+    } else {
+      // TODO: handle what happens if lhs does not exist
     }
   }
 }

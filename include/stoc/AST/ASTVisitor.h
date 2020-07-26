@@ -11,8 +11,7 @@
 #define STOC_ASTVISITOR_H
 
 #include <memory>
-// TODO: change the way includes are in AST/ to not have to declare all classes of nodes but instead
-//  #include "Expr.h" "Decl.h" "Stmt.h" declare all classes of nodes that exist in the AST
+
 class BasicNode;
 class Decl;
 class VarDecl;

@@ -1,21 +1,24 @@
-//===- stoc/AST/Expr.h - Defintion of nodes related to Expressions in AST --------*- C++ -*-===//
+//===- stoc/AST/Expr.h - Defintion of nodes related to Expressions in AST -----------*- C++ -*-===//
 //
-//===---------------------------------------------------------------------------------------===//
+//===------------------------------------------------------------------------------------------===//
 //
 // This file defines the classes of nodes related to Expressions in AST.
 // The expression nodes inherit from Expr, like ExprBinary, ExprUnary, ....
-// An expression is a node in the AST that produces a value
+// An expression is a node in the AST that produces a value.
 //
-//===---------------------------------------------------------------------------------------===//
+// To add an Expr node in the AST, define it here and make it inherit from Expr. Also, add the
+// expression in stoc/AST/ASTVisitor.h
+//===------------------------------------------------------------------------------------------===//
 
 #ifndef STOC_EXPR_H
 #define STOC_EXPR_H
 
-#include "BasicNode.h"
-#include "stoc/Scanner/Token.h"
-
 #include <memory>
+#include <string>
 #include <vector>
+
+#include "stoc/AST/BasicNode.h"
+#include "stoc/Scanner/Token.h"
 
 /// An expression is a node in the AST that produces a value
 class Expr : public BasicNode, public std::enable_shared_from_this<Expr> {
@@ -27,21 +30,17 @@ class Expr : public BasicNode, public std::enable_shared_from_this<Expr> {
 
 public:
   /// Type of the expression of the node in the AST
-  enum ExprType {
-    BINARYEXPR,
-    UNARYEXPR,
-    LITERALEXPR,
-    IDENTEXPR,
-    CALLEXPR
-  };
+  enum class Kind { BINARYEXPR, UNARYEXPR, LITERALEXPR, IDENTEXPR, CALLEXPR };
 
 protected:
-  Expr::ExprType exprType;
+  Kind exprKind;
 
 public:
+  explicit Expr(Expr::Kind exprKind);
+  [[nodiscard]] Expr::Kind getExprKind() const;
+
   virtual const std::string &getType() const = 0;
   virtual void setType(const std::string &type) = 0;
-  Expr::ExprType getExprType() const;
 };
 
 /// A binary expression is a node in the AST that contains two other nodes "joined" by an operator

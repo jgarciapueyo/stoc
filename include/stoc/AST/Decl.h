@@ -1,13 +1,25 @@
-// TODO: add header of the file
+//===- stoc/AST/Decl.h - Defintion of nodes related to Declarations in AST ----------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file defines the classes of nodes related to Declarations in AST.
+// The declaration nodes inherit from Decl, like VarDecl, ConstDecl, ParamDecl, FuncDecl ....
+// A declaration is a node in the AST that specifies properties of an identifier: variable,
+// function, ...
+//
+// To add an Decl node in the AST, define it here and make it inherit from Decl. Also, add the
+// declaration in stoc/AST/ASTVisitor.h
+//===------------------------------------------------------------------------------------------===//
+
 #ifndef STOC_DECL_H
 #define STOC_DECL_H
-
-#include "BasicNode.h"
-#include "stoc/Scanner/Token.h"
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "stoc/AST/BasicNode.h"
+#include "stoc/Scanner/Token.h"
 
 /// A declaration is a node in the AST that declares a new name (variable, constant, function)
 class Decl : public BasicNode, public std::enable_shared_from_this<Decl> {
@@ -19,18 +31,14 @@ class Decl : public BasicNode, public std::enable_shared_from_this<Decl> {
 
 public:
   /// Type of the declaration of the node in the AST
-  enum DeclType {
-    VARDECL,
-    CONSTDECL,
-    PARAMDECL,
-    FUNCDECL
-  };
+  enum class Kind { VARDECL, CONSTDECL, PARAMDECL, FUNCDECL };
 
 protected:
-  DeclType declType;
+  Kind declKind;
 
 public:
-  [[nodiscard]] Decl::DeclType getDeclType() const;
+  explicit Decl(Decl::Kind declKind);
+  [[nodiscard]] Decl::Kind getDeclKind() const;
 };
 
 /// A variable declaration is a node in the AST that declares and defines a variable

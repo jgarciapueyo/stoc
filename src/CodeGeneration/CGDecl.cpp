@@ -3,14 +3,14 @@
 #include <llvm/Transforms/Utils/ModuleUtils.h>
 
 void CodeGeneration::generate(const std::shared_ptr<Decl> &node) {
-  switch (node->getDeclType()) {
-  case Decl::VARDECL:
+  switch (node->getDeclKind()) {
+  case Decl::Kind::VARDECL:
     return generate(std::static_pointer_cast<VarDecl>(node));
-  case Decl::CONSTDECL:
+  case Decl::Kind::CONSTDECL:
     return generate(std::static_pointer_cast<ConstDecl>(node));
-  case Decl::PARAMDECL:
+  case Decl::Kind::PARAMDECL:
     return generate(std::static_pointer_cast<ParamDecl>(node));
-  case Decl::FUNCDECL:
+  case Decl::Kind::FUNCDECL:
     return generate(std::static_pointer_cast<FuncDecl>(node));
   }
 }

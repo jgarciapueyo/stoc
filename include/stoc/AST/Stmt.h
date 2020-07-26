@@ -1,12 +1,23 @@
-// TODO: add header of the file
+//===- stoc/AST/Stmt.h - Defintion of nodes related to Statements in AST ------------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file defines the classes of nodes related to Statements in AST.
+// The statement nodes inherit from Stmt, like BlockStmt, IfStmt, ....
+// A statement is a node in the AST that works as a syntactic unit of some action to be carried out.
+//
+// To add an Stmt node in the AST, define it here and make it inherit from Stmt. Also, add the
+// statement in stoc/AST/ASTVisitor.h
+//===------------------------------------------------------------------------------------------===//
+
 #ifndef STOC_STMT_H
 #define STOC_STMT_H
 
-#include "BasicNode.h"
-#include "stoc/Scanner/Token.h"
-
 #include <memory>
 #include <vector>
+
+#include "stoc/AST/BasicNode.h"
+#include "stoc/Scanner/Token.h"
 
 /// An statement is a node in the AST that expresses some action (controlling flow, ...)
 class Stmt : public BasicNode, public std::enable_shared_from_this<Stmt> {
@@ -17,7 +28,7 @@ class Stmt : public BasicNode, public std::enable_shared_from_this<Stmt> {
   // the AST and modifying it.
 
 public:
-  enum StmtType {
+  enum class Kind {
     DECLARATIONSTMT,
     EXPRESSIONSTMT,
     BLOCKSTMT,
@@ -29,10 +40,11 @@ public:
   };
 
 protected:
-  StmtType stmtType;
+  Kind stmtKind;
 
 public:
-  Stmt::StmtType getStmtType() const;
+  explicit Stmt(Stmt::Kind stmtKind);
+  Stmt::Kind getStmtKind() const;
 };
 
 /// An expression statement is a node in the AST that represents an expression in a block statement
@@ -69,7 +81,8 @@ public:
 ///  \rhs right hand side node to the \lhs left hand side node
 class AssignmentStmt : public Stmt {
 private:
-  // TODO: check if expr lhs can really appear in the LeftHandSide and if rhs can really appear in the RightHandSide
+  // TODO: check if expr lhs can really appear in the LeftHandSide and if rhs can really appear in
+  // the RightHandSide
   std::shared_ptr<Expr> lhs;
   std::shared_ptr<Expr> rhs;
 
@@ -114,7 +127,7 @@ private:
   /// keyword IF (needed for printing AST)
   Token ifKeyword;
   std::shared_ptr<Expr> condition;
-    std::shared_ptr<BlockStmt> thenBranch;
+  std::shared_ptr<BlockStmt> thenBranch;
   std::shared_ptr<Stmt> elseBranch;
   bool hasElse;
 

@@ -10,9 +10,9 @@
 #ifndef STOC_BASICNODE_H
 #define STOC_BASICNODE_H
 
-#include "ASTVisitor.h"
-
 #include <iostream>
+
+#include "stoc/AST/ASTVisitor.h"
 
 /// Base class from which other nodes of the AST will inherit.
 /// It implements the Visitor Pattern for adding new operations to the AST nodes

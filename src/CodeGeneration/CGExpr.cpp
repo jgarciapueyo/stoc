@@ -1,16 +1,16 @@
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 llvm::Value *CodeGeneration::generate(const std::shared_ptr<Expr> &node) {
-  switch (node->getExprType()) {
-  case Expr::BINARYEXPR:
+  switch (node->getExprKind()) {
+  case Expr::Kind::BINARYEXPR:
     return generate(std::static_pointer_cast<BinaryExpr>(node));
-  case Expr::UNARYEXPR:
+  case Expr::Kind::UNARYEXPR:
     return generate(std::static_pointer_cast<UnaryExpr>(node));
-  case Expr::LITERALEXPR:
+  case Expr::Kind::LITERALEXPR:
     return generate(std::static_pointer_cast<LiteralExpr>(node));
-  case Expr::IDENTEXPR:
+  case Expr::Kind::IDENTEXPR:
     return generate(std::static_pointer_cast<IdentExpr>(node));
-  case Expr::CALLEXPR:
+  case Expr::Kind::CALLEXPR:
     return generate(std::static_pointer_cast<CallExpr>(node));
   }
 }
@@ -133,18 +133,18 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<LiteralExpr> &node) 
 llvm::Value *CodeGeneration::generate(const std::shared_ptr<IdentExpr> &node) {
   auto localvariable = localVariables.find(node->getName());
   if (localvariable != localVariables.end()) {
-    llvm::Value *v = builder->CreateLoad(getLLVMType(node->getType()), localvariable->second, "tempload");
+    llvm::Value *v =
+        builder->CreateLoad(getLLVMType(node->getType()), localvariable->second, "tempload");
     return v;
-  }
-  else {
+  } else {
     // Variable is not local, check if it is global
     auto globalvariable = globalVariables.find(node->getName());
-    if(globalvariable != globalVariables.end()) {
-      llvm::Value *v = builder->CreateLoad(getLLVMType(node->getType()), globalvariable->second, "tempload");
+    if (globalvariable != globalVariables.end()) {
+      llvm::Value *v =
+          builder->CreateLoad(getLLVMType(node->getType()), globalvariable->second, "tempload");
       return v;
-    }
-    else {
-      //TODO: handle what happens if variable does not exist
+    } else {
+      // TODO: handle what happens if variable does not exist
       return nullptr;
     }
   }
