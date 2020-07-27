@@ -1,4 +1,4 @@
-//===- stoc/Parser/Parser.cpp - Implementation of Parser class --------*- C++ -*-===//
+//===- src/Parser/Parser.cpp - Implementation of Parser class --------*- C++ -*-===//
 //
 //===----------------------------------------------------------------------------===//
 //
@@ -52,9 +52,9 @@ std::shared_ptr<Decl> Parser::parseVarConstDecl() {
   consume(SEMICOLON, "Expected ';' after variable declaration");
 
   if (varConstKeyword.tokenType == VAR) {
-    return std::make_shared<VarDecl>(varConstKeyword, identifier, type, value);
+    return std::make_shared<VarDecl>(varConstKeyword, type, identifier, value);
   } else {
-    return std::make_shared<ConstDecl>(varConstKeyword, identifier, type, value);
+    return std::make_shared<ConstDecl>(varConstKeyword, type, identifier, value);
   }
 }
 

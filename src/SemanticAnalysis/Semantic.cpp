@@ -16,9 +16,7 @@ void Semantic::analyse() {
   }
 }
 
-void Semantic::analyse(const std::shared_ptr<Expr> &expr) {
-  expr->accept(this);
-}
+void Semantic::analyse(const std::shared_ptr<Expr> &expr) { expr->accept(this); }
 
 void Semantic::analyse(const std::shared_ptr<Stmt> &stmt) { stmt->accept(this); }
 
@@ -135,11 +133,11 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
   analyse(value);
 
   // Type checking
-  if (to_string(node->getType().tokenType) != node->getValue()->getType()) {
+  if (to_string(node->getTypeToken().tokenType) != node->getValue()->getType()) {
     // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getVarKeyword().value << " <l."
-              << node->getVarKeyword().line << ":c." << node->getVarKeyword().column << ">"
-              << std::endl;
+    std::cerr << "Type checking: different types " << node->getVarKeywordToken().value << " <l."
+              << node->getVarKeywordToken().line << ":c." << node->getVarKeywordToken().column
+              << ">" << std::endl;
     exit(1);
   }
 
@@ -148,7 +146,8 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new variable
-  Symbol symbol(node->getIdentifier().value, Symbol::VARIABLE, to_string(node->getType().tokenType));
+  Symbol symbol(node->getIdentifierToken().value, Symbol::VARIABLE,
+                to_string(node->getTypeToken().tokenType));
   // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
   //  right now, we first insert and later assign so is permitted, maybe better to flip
   //  the following two actions
@@ -160,11 +159,11 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   analyse(node->getValue());
 
   // Type checking
-  if (to_string(node->getType().tokenType) != node->getValue()->getType()) {
+  if (to_string(node->getTypeToken().tokenType) != node->getValue()->getType()) {
     // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getConstKeyword().value << " <l."
-              << node->getConstKeyword().line << ":c." << node->getConstKeyword().column << ">"
-              << std::endl;
+    std::cerr << "Type checking: different types " << node->getConstKeywordToken().value << " <l."
+              << node->getConstKeywordToken().line << ":c." << node->getConstKeywordToken().column
+              << ">" << std::endl;
     exit(1);
   }
 
@@ -173,7 +172,8 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new constant
-  Symbol symbol(node->getIdentifier().value, Symbol::CONSTANT, to_string(node->getType().tokenType));
+  Symbol symbol(node->getIdentifierToken().value, Symbol::CONSTANT,
+                to_string(node->getTypeToken().tokenType));
   // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
   //  right now, we first insert and later assign so is permitted, maybe better to flip
   //  the following two actions
@@ -182,7 +182,8 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
 
 void Semantic::visit(std::shared_ptr<ParamDecl> node) {
   // Update symbol table with new constant
-  Symbol symbol(node->getIdentifier().value, Symbol::PARAMETER, to_string(node->getType().tokenType));
+  Symbol symbol(node->getIdentifierToken().value, Symbol::PARAMETER,
+                to_string(node->getTypeToken().tokenType));
   symbolTable->insert(symbol.getIdentifier(), symbol);
 }
 
@@ -190,16 +191,16 @@ void Semantic::visit(std::shared_ptr<FuncDecl> node) {
   Semantic::FunctionType previousFunctionType = functionType;
   functionType = Semantic::FUNCTION;
   // TODO: check if make returnType a class or enum instead of string
-  returnType = node->isHasReturnType() ? to_string(node->getReturnType().tokenType) : "void";
+  returnType = node->isHasReturnType() ? to_string(node->getReturnTypeToken().tokenType) : "void";
 
   // Need type of arguments to check later when function is called
   std::vector<std::string> parameterListType;
   for (const auto &parameter : node->getParams()) {
-    parameterListType.push_back(to_string(parameter->getType().tokenType));
+    parameterListType.push_back(to_string(parameter->getTypeToken().tokenType));
   }
 
   // Insert function identifier in scope
-  Symbol symbol(node->getIdentifier().value, Symbol::FUNCTION, returnType, parameterListType);
+  Symbol symbol(node->getIdentifierToken().value, Symbol::FUNCTION, returnType, parameterListType);
   symbolTable->insert(symbol.getIdentifier(), symbol);
 
   // Analyse parameters and body of the function
@@ -384,7 +385,7 @@ void Semantic::visit(std::shared_ptr<IdentExpr> node) {
   node->setType(symbol.getReturnType());
 
   // Update field to keep track of most recent resolved symbol for a function
-  if(symbol.getType() == Symbol::FUNCTION) {
+  if (symbol.getType() == Symbol::FUNCTION) {
     resolvedSymbol = symbol;
   }
 }
@@ -401,18 +402,19 @@ void Semantic::visit(std::shared_ptr<CallExpr> node) {
   resolvedSymbol = previousResolvedSymbol;
 
   // Type checking for arguments
-  if(node->getArgs().size() != resolvedSymbol.getParameterList().size()) {
+  if (node->getArgs().size() != resolvedSymbol.getParameterList().size()) {
     // TODO: improve error handling
     // TODO: improve fields of callExpr node to have some token to show where the error is
-    std::cerr << "Type checking: number of arguments is different from number of parameters" << std::endl;
+    std::cerr << "Type checking: number of arguments is different from number of parameters"
+              << std::endl;
     exit(1);
   }
 
   auto itArgs = node->getArgs().begin();
   auto itParams = resolvedSymbol.getParameterList().begin();
 
-  while(itArgs != node->getArgs().end() && itParams != resolvedSymbol.getParameterList().end()) {
-    if((*itArgs)->getType() != (*itParams)) {
+  while (itArgs != node->getArgs().end() && itParams != resolvedSymbol.getParameterList().end()) {
+    if ((*itArgs)->getType() != (*itParams)) {
       // TODO: improve error handling
       std::cerr << "Type checking: type of parameters is different" << std::endl;
       exit(1);

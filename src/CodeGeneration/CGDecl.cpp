@@ -1,3 +1,4 @@
+# TODO: add header
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 #include <llvm/Transforms/Utils/ModuleUtils.h>
@@ -47,10 +48,10 @@ void CodeGeneration::generateFunctionForInitialization(const std::shared_ptr<Var
 void CodeGeneration::generate(const std::shared_ptr<VarDecl> &node) {
   if (node->isGlobal()) {
     llvm::Constant *constant0 = llvm::ConstantInt::get(this->builder->getInt64Ty(), 0);
-    auto *GV = new llvm::GlobalVariable(*module, getLLVMType(node->getType().value), false,
+    auto *GV = new llvm::GlobalVariable(*module, getLLVMType(node->getTypeToken().value), false,
                                         llvm::GlobalValue::PrivateLinkage, constant0,
-                                        node->getIdentifier().value, nullptr);
-    globalVariables[node->getIdentifier().value] = GV;
+                                        node->getIdentifierToken().value, nullptr);
+    globalVariables[node->getIdentifierToken().value] = GV;
     // Because global variable declarations might have a complex initialization (not just a simple
     // constant expression):
     // var int a = 5 + 4 * 3 - 2;
@@ -63,14 +64,14 @@ void CodeGeneration::generate(const std::shared_ptr<VarDecl> &node) {
     // Variable is defined
     // TODO: improvement: put alloca in the entry block of the function (see:
     //       http://lists.llvm.org/pipermail/llvm-dev/2017-January/108730.html)
-    auto *allocaInst = builder->CreateAlloca(getLLVMType(node->getType().value), nullptr,
-                                             node->getIdentifier().value);
+    auto *allocaInst = builder->CreateAlloca(getLLVMType(node->getTypeToken().value), nullptr,
+                                             node->getIdentifierToken().value);
     // Generate code to calculate the initializer value
     llvm::Value *value = generate(node->getValue());
     // Store the initializer value in the variable
     builder->CreateStore(value, allocaInst);
     // The reference to the variable is stored to access it later
-    localVariables[node->getIdentifier().value] = allocaInst;
+    localVariables[node->getIdentifierToken().value] = allocaInst;
   }
 }
 
@@ -105,10 +106,10 @@ void CodeGeneration::generateFunctionForInitialization(const std::shared_ptr<Con
 
 void CodeGeneration::generate(const std::shared_ptr<ConstDecl> &node) {
   if (node->isGlobal()) {
-    auto *GV = new llvm::GlobalVariable(*module, getLLVMType(node->getType().value), true,
+    auto *GV = new llvm::GlobalVariable(*module, getLLVMType(node->getTypeToken().value), true,
                                         llvm::GlobalValue::PrivateLinkage, nullptr,
-                                        node->getIdentifier().value, nullptr);
-    globalVariables[node->getIdentifier().value] = GV;
+                                        node->getIdentifierToken().value, nullptr);
+    globalVariables[node->getIdentifierToken().value] = GV;
     // Because global variable declarations might have a complex initialization (not just a simple
     // constant expression):
     // var int a = 5 + 4 * 3 - 2;
@@ -121,14 +122,14 @@ void CodeGeneration::generate(const std::shared_ptr<ConstDecl> &node) {
     // Variable is defined
     // TODO: improvement: put alloca in the entry block of the function (see:
     //       http://lists.llvm.org/pipermail/llvm-dev/2017-January/108730.html)
-    auto *allocaInst = builder->CreateAlloca(getLLVMType(node->getType().value), nullptr,
-                                             node->getIdentifier().value);
+    auto *allocaInst = builder->CreateAlloca(getLLVMType(node->getTypeToken().value), nullptr,
+                                             node->getIdentifierToken().value);
     // Generate code to calculate the initializer value
     llvm::Value *value = generate(node->getValue());
     // Store the initializer value in the variable
     builder->CreateStore(value, allocaInst);
     // The reference to the variable is stored to access it later
-    localVariables[node->getIdentifier().value] = allocaInst;
+    localVariables[node->getIdentifierToken().value] = allocaInst;
   }
 }
 
@@ -142,22 +143,22 @@ void CodeGeneration::generate(const std::shared_ptr<FuncDecl> &node) {
   std::vector<llvm::Type *> params;
 
   for (const auto &param : node->getParams()) {
-    params.push_back(getLLVMType(param->getType().value));
+    params.push_back(getLLVMType(param->getTypeToken().value));
   }
 
   // 1.2 Return Type and Parameters
   // TODO: handle void type in return
-  llvm::Type *returnType = getLLVMType(node->getReturnType().value);
+  llvm::Type *returnType = getLLVMType(node->getReturnTypeToken().value);
   llvm::FunctionType *functionType = llvm::FunctionType::get(returnType, params, false);
 
   // 2. Create Function
   llvm::Function *function = llvm::Function::Create(functionType, llvm::Function::ExternalLinkage,
-                                                    node->getIdentifier().value, module.get());
+                                                    node->getIdentifierToken().value, module.get());
 
   // 2.1 Set name for all parameters
   int idx = 0;
   for (auto &arg : function->args()) {
-    arg.setName(node->getParams()[idx]->getIdentifier().value);
+    arg.setName(node->getParams()[idx]->getIdentifierToken().value);
     idx++;
   }
 
@@ -179,14 +180,14 @@ void CodeGeneration::generate(const std::shared_ptr<FuncDecl> &node) {
   // parameters in the local variables
   localVariables.clear();
   for (const auto &param : node->getParams()) {
-    localVariables[param->getIdentifier().value] =
-        builder->CreateAlloca(getLLVMType(param->getType().value), nullptr);
+    localVariables[param->getIdentifierToken().value] =
+        builder->CreateAlloca(getLLVMType(param->getTypeToken().value), nullptr);
   }
 
   // If there is return type, there will be return statement so we create the special variable
   if (node->isHasReturnType()) {
     localVariables["return"] =
-        builder->CreateAlloca(getLLVMType(node->getReturnType().value), nullptr, "return");
+        builder->CreateAlloca(getLLVMType(node->getReturnTypeToken().value), nullptr, "return");
   }
 
   for (auto &arg : function->args()) {
@@ -218,8 +219,8 @@ void CodeGeneration::generate(const std::shared_ptr<FuncDecl> &node) {
     // Code generation for the return statement of the exit block
     function->getBasicBlockList().push_back(this->exitBB);
     builder->SetInsertPoint(this->exitBB);
-    auto load =
-        builder->CreateLoad(getLLVMType(node->getReturnType().value), localVariables["return"]);
+    auto load = builder->CreateLoad(getLLVMType(node->getReturnTypeToken().value),
+                                    localVariables["return"]);
     builder->CreateRet(load);
   }
 }

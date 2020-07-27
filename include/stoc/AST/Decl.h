@@ -46,24 +46,26 @@ public:
 class VarDecl : public Decl {
 private:
   /// keyword VAR for declaring a variable (needed for printing AST)
-  Token varKeyword;
-  Token type;
-  Token identifier;
+  Token varKeywordToken;
+  Token typeToken;
+  Token identifierToken;
+
   std::shared_ptr<Expr> value;
   bool isGlobalVariable;
 
 public:
-  // TODO: change order of identifier and type (fields, constructor and getters)
-  VarDecl(Token varKeyword, Token identifier, Token type, std::shared_ptr<Expr> value);
+  VarDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
+          std::shared_ptr<Expr> value);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  [[nodiscard]] const Token &getVarKeyword() const;
-  [[nodiscard]] const Token &getIdentifier() const;
-  [[nodiscard]] const Token &getType() const;
+  [[nodiscard]] const Token &getVarKeywordToken() const;
+  [[nodiscard]] const Token &getTypeToken() const;
+  [[nodiscard]] const Token &getIdentifierToken() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
+
   [[nodiscard]] bool isGlobal() const;
   void setIsGlobal(bool isGlobal);
 };
@@ -73,23 +75,23 @@ public:
 class ConstDecl : public Decl {
 private:
   /// keyword CONST for declaring a constant (needed for printing AST)
-  Token constKeyword;
-  Token identifier;
-  Token type;
+  Token constKeywordToken;
+  Token typeToken;
+  Token identifierToken;
   std::shared_ptr<Expr> value;
   bool isGlobalConstant;
 
 public:
-  // TODO: change order of identifier and type (fields, constructor and getters)
-  ConstDecl(Token constKeyword, Token identifier, Token type, std::shared_ptr<Expr> value);
+  ConstDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
+            std::shared_ptr<Expr> value);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  [[nodiscard]] const Token &getConstKeyword() const;
-  [[nodiscard]] const Token &getIdentifier() const;
-  [[nodiscard]] const Token &getType() const;
+  [[nodiscard]] const Token &getConstKeywordToken() const;
+  [[nodiscard]] const Token &getTypeToken() const;
+  [[nodiscard]] const Token &getIdentifierToken() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
   [[nodiscard]] bool isGlobal() const;
   void setIsGlobal(bool isGlobal);
@@ -99,20 +101,20 @@ public:
 class ParamDecl : public Decl {
 private:
   /// keyword VAR/CONST for declaring a variable/constant as a parameter
-  Token keyword;
-  Token type;
-  Token identifier;
+  Token keywordToken;
+  Token typeToken;
+  Token identifierToken;
 
 public:
-  ParamDecl(Token keyword, Token type, Token identifier);
+  ParamDecl(Token keywordToken, Token typeToken, Token identifierToken);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  [[nodiscard]] const Token &getKeyword() const;
-  [[nodiscard]] const Token &getType() const;
-  [[nodiscard]] const Token &getIdentifier() const;
+  [[nodiscard]] const Token &getKeywordToken() const;
+  [[nodiscard]] const Token &getTypeToken() const;
+  [[nodiscard]] const Token &getIdentifierToken() const;
 };
 
 /// A function declaration is a node in the AST that declares and defines a function
@@ -120,32 +122,32 @@ public:
 class FuncDecl : public Decl {
 private:
   /// keyword FUNC for declaring a function
-  Token funcKeyword;
-  Token identifier;
+  Token funcKeywordToken;
+  Token identifierToken;
   std::vector<std::shared_ptr<ParamDecl>> params;
-  Token returnType;
+  Token returnTypeToken;
   /// true if function returns something, false otherwise
   bool hasReturnType;
   std::shared_ptr<BlockStmt> body;
 
 public:
-  FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
-           Token returnType, std::shared_ptr<BlockStmt> body);
-
-  FuncDecl(Token funcKeyword, Token identifier, std::vector<std::shared_ptr<ParamDecl>> params,
+  FuncDecl(Token funcKeywordToken, Token identifierToken,
+           std::vector<std::shared_ptr<ParamDecl>> params, Token returnTypeToken,
            std::shared_ptr<BlockStmt> body);
+
+  FuncDecl(Token funcKeywordToken, Token identifierToken,
+           std::vector<std::shared_ptr<ParamDecl>> params, std::shared_ptr<BlockStmt> body);
 
   /// method needed for the Visitor Pattern
   void accept(ASTVisitor *visitor) override;
 
   // Getters
-  [[nodiscard]] const Token &getFuncKeyword() const;
-  [[nodiscard]] const Token &getIdentifier() const;
+  [[nodiscard]] const Token &getFuncKeywordToken() const;
+  [[nodiscard]] const Token &getIdentifierToken() const;
   [[nodiscard]] const std::vector<std::shared_ptr<ParamDecl>> &getParams() const;
-  [[nodiscard]] const Token &getReturnType() const;
+  [[nodiscard]] const Token &getReturnTypeToken() const;
   [[nodiscard]] bool isHasReturnType() const;
   [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
-  // TODO: add get name
 };
 
 #endif // STOC_DECL_H
