@@ -51,7 +51,7 @@ bool Scanner::isAlpha(char c) {
 bool Scanner::isAlphaNum(char c) { return isDigit(c) || isAlpha(c); }
 
 void Scanner::reportError(const std::string &msg) {
-  std::cerr << "<" << this->file->getFilename() << ":l." << this->lineStart << ":c"
+  std::cerr << "<" << this->file->getFilename() << ":l." << this->lineStart << ":c."
             << this->columnStart << "> Scanning error: " << msg << std::endl;
 
   this->file->setErrorInScanning(true);

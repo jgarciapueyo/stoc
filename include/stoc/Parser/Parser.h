@@ -35,10 +35,18 @@ private:
   // numbers)
   int current; /// current token being analyzed
 
+  // Exception if there is an error while parsing
+  class ParsingError : public std::exception {};
+
   // HELPER METHODS
 
   /// prints the error \error_msg
   void reportError(std::string error_msg);
+
+  /// in case of parsing error, advances tokens until the parser is in a correct position to
+  /// continue parsing the file. This is useful to find multiple errors and not just fail on the
+  /// first error during parsing.
+  void synchronize();
 
   /// true if \current token is T_EOF (end of file) or \current is equal to length of list of tokens
   bool isAtEnd();

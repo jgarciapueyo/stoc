@@ -30,14 +30,21 @@ void Parser::parse() {
 //------- Declarations -------
 
 std::shared_ptr<Decl> Parser::parseDecl() {
-  switch (currentToken().tokenType) {
-  case VAR:
-  case CONST:
-    return parseVarConstDecl();
-  case FUNC:
-    return parseFuncDecl();
-  default:
-    reportError("Expected declaration");
+  try {
+    switch (currentToken().tokenType) {
+    case VAR:
+    case CONST:
+      return parseVarConstDecl();
+    case FUNC:
+      return parseFuncDecl();
+    default:
+      reportError("Expected declaration");
+    }
+  } catch (Parser::ParsingError &parseError) {
+    synchronize(); // set parser in good state
+    // return nullptr because it does not matter what it is returned since there has been an error
+    // and the AST will not be traversed
+    return nullptr;
   }
 }
 
@@ -45,9 +52,10 @@ std::shared_ptr<Decl> Parser::parseVarConstDecl() {
   // we know current token is VAR or CONST
   Token varConstKeyword = advance();
   Token type = parseType();
-  Token identifier = consume(IDENTIFIER, "Expected identifier after " +
-                                             to_string(varConstKeyword.tokenType) + " declaration");
-  consume(ASSIGN, "Expected '=' after " + to_string(varConstKeyword.tokenType) + " declaration");
+  Token identifier =
+      consume(IDENTIFIER, "Expected identifier after '" + to_string(varConstKeyword.tokenType) +
+                              "' in variable declaration");
+  consume(ASSIGN, "Expected '=' after identifier in variable declaration");
   std::shared_ptr<Expr> value = parseExpr();
   consume(SEMICOLON, "Expected ';' after variable declaration");
 
@@ -61,10 +69,12 @@ std::shared_ptr<Decl> Parser::parseVarConstDecl() {
 std::shared_ptr<Decl> Parser::parseFuncDecl() {
   // we know current token is FUNC
   Token funcKeyword = advance();
-  Token name = consume(IDENTIFIER, "Expected IDENTIFIER in after 'func' in function declaration");
+  Token name = consume(IDENTIFIER, "Expected identifier after 'func' in function declaration");
   std::vector<std::shared_ptr<ParamDecl>> params = parseParameters();
 
-  // TODO: see if this can be improved by creating a Token that means no return type
+  // TODO: see if this can be improved by creating a Token that means no return type. When doing semantic
+  //       semantic analysis, create class of types and in Constructor of func decl the second will be
+  //       of type void (Semantic Analysis)
   if (!check(LBRACE)) {
     Token returnType = parseReturnType();
     std::shared_ptr<BlockStmt> body = parseBlockStmt();
@@ -78,19 +88,26 @@ std::shared_ptr<Decl> Parser::parseFuncDecl() {
 //------- Statements -------
 
 std::shared_ptr<Stmt> Parser::parseStmt() {
-  switch (currentToken().tokenType) {
-  case LBRACE:
-    return parseBlockStmt();
-  case IF:
-    return parseIfStmt();
-  case FOR:
-    return parseForStmt();
-  case WHILE:
-    return parseWhileStmt();
-  case RETURN:
-    return parseReturnStmt();
-  default:
-    return parseSimpleStmt(true);
+  try {
+    switch (currentToken().tokenType) {
+    case LBRACE:
+      return parseBlockStmt();
+    case IF:
+      return parseIfStmt();
+    case FOR:
+      return parseForStmt();
+    case WHILE:
+      return parseWhileStmt();
+    case RETURN:
+      return parseReturnStmt();
+    default:
+      return parseSimpleStmt(true);
+    }
+  } catch (Parser::ParsingError &parseError) {
+    synchronize(); // set parser in good state
+    // return nullptr because it does not matter what it is returned since there has been an error
+    // and the AST will not be traversed
+    return nullptr;
   }
 }
 
@@ -150,7 +167,7 @@ std::shared_ptr<Stmt> Parser::parseIfStmt() {
       elseBranch = parseBlockStmt();
       break;
     default:
-      reportError("Expected 'if' statement or block after else");
+      reportError("Expected 'if' statement or block after 'else'");
     }
   }
 
@@ -202,16 +219,16 @@ std::shared_ptr<Stmt> Parser::parseWhileStmt() {
 }
 
 std::shared_ptr<Stmt> Parser::parseReturnStmt() {
-  // TODO: check that we are inside a function to be able to return
+  // TODO: (Semantic Analysis) check that we are inside a function to be able to return
   // we know curret token is RETURN
   Token returnKeyword = advance();
 
   if (!check(SEMICOLON)) {
     std::shared_ptr<Expr> value = parseExpr();
-    consume(SEMICOLON, "Expected ';' after RETURN statement");
+    consume(SEMICOLON, "Expected ';' after return statement");
     return std::make_shared<ReturnStmt>(returnKeyword, value);
   } else {
-    consume(SEMICOLON, "Expected ';' after RETURN statement");
+    consume(SEMICOLON, "Expected ';' after return statement");
     return std::make_shared<ReturnStmt>(returnKeyword, nullptr);
   }
 }
@@ -242,13 +259,16 @@ std::shared_ptr<Expr> Parser::parseUnaryExpr() {
   switch (currentToken().tokenType) {
   case ADD: // we allow ADD(+) as unary operator
   case SUB:
-  case NOT:
+  case NOT: {
     Token t = advance();
     std::shared_ptr<Expr> rhs = parseBinaryExpr(PREC_UNARY);
     return std::make_shared<UnaryExpr>(rhs, t);
   }
+  default:
+    return parsePrimaryExpr();
+  }
 
-  return parsePrimaryExpr();
+
 }
 
 std::shared_ptr<Expr> Parser::parsePrimaryExpr() {
@@ -284,7 +304,7 @@ std::vector<std::shared_ptr<ParamDecl>> Parser::parseParameters() {
   std::vector<std::shared_ptr<ParamDecl>> params = {};
 
   while (!check(RPAREN) && !check(T_EOF)) {
-    // TODO: think about if it will always be VAR or it can be also CONST
+    // TODO: (Semantic Analysis) think about if it will always be VAR or it can be also CONST. Check what happens in LLVM IR
     Token keyword = consume(VAR, "Expected VAR as variable definition in parameters");
     Token type = parseType();
     Token ident = consume(IDENTIFIER, "Expected IDENTIFIER in variable definition in parameters");
@@ -335,18 +355,44 @@ std::shared_ptr<Expr> Parser::parseOperand() {
     Token ident = advance();
     return std::make_shared<IdentExpr>(ident);
   }
+  default:
+    reportError("Expected expression");
   }
-
-  reportError("Expected expression");
 }
 
 void Parser::reportError(std::string error_msg) {
-  std::cerr << "<" << this->file->getFilename() << ":l." << currentToken().line << ">"
-            << " error: " << currentToken().value << " " << error_msg << std::endl;
+  std::cerr << "<" << this->file->getFilename() << ":l." << currentToken().line << ":c"
+            << currentToken().column << "> Parsing error: " << error_msg << std::endl;
 
   this->file->setErrorInParsing(true);
-  // TODO: change this for detecting more than 1 error
-  exit(1);
+  throw Parser::ParsingError();
+}
+
+void Parser::synchronize() {
+  bool loop = true;
+  while (!isAtEnd() && loop) {
+    switch (currentToken().tokenType) {
+    // If the start of a new declaration is found
+    case VAR:
+    case CONST:
+    case FUNC:
+    // If the start of a new statement is found
+    case IF:
+    case FOR:
+    case WHILE:
+    case RETURN:
+    case LBRACE:
+      loop = false;
+      break;
+    // If the end of a statement is found
+    case SEMICOLON:
+      advance(); // to start new statement or declaration
+      loop = false;
+      break;
+    default:
+      advance();
+    }
+  }
 }
 
 bool Parser::isAtEnd() {
@@ -388,8 +434,6 @@ bool Parser::match(TokenType type) {
     return false;
   }
 }
-
-// TODO: add method expected(type, error_msg) similar to consume but does not advance()
 
 Token Parser::consume(TokenType type, std::string error_msg) {
   if (check(type)) {

@@ -81,7 +81,7 @@ public:
 ///  \rhs right hand side node to the \lhs left hand side node
 class AssignmentStmt : public Stmt {
 private:
-  // TODO: check if expr lhs can really appear in the LeftHandSide and if rhs can really appear in
+  // TODO: (Semantic Analysis) check if expr lhs can really appear in the LeftHandSide and if rhs can really appear in
   // the RightHandSide
   std::shared_ptr<Expr> lhs;
   std::shared_ptr<Expr> rhs;
@@ -211,6 +211,6 @@ public:
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
 };
 
-// TODO: add EmptyStmt
+// TODO: (improvement) add EmptyStmt
 
 #endif // STOC_STMT_H

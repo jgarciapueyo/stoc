@@ -1,4 +1,4 @@
-# TODO: add header
+// TODO: add header
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 #include <llvm/Transforms/Utils/ModuleUtils.h>
