@@ -39,6 +39,7 @@ std::shared_ptr<Decl> Parser::parseDecl() {
       return parseFuncDecl();
     default:
       reportError("Expected declaration");
+      return nullptr;
     }
   } catch (Parser::ParsingError &parseError) {
     synchronize(); // set parser in good state
@@ -72,9 +73,6 @@ std::shared_ptr<Decl> Parser::parseFuncDecl() {
   Token name = consume(IDENTIFIER, "Expected identifier after 'func' in function declaration");
   std::vector<std::shared_ptr<ParamDecl>> params = parseParameters();
 
-  // TODO: see if this can be improved by creating a Token that means no return type. When doing semantic
-  //       semantic analysis, create class of types and in Constructor of func decl the second will be
-  //       of type void (Semantic Analysis)
   if (!check(LBRACE)) {
     Token returnType = parseReturnType();
     std::shared_ptr<BlockStmt> body = parseBlockStmt();
@@ -219,7 +217,6 @@ std::shared_ptr<Stmt> Parser::parseWhileStmt() {
 }
 
 std::shared_ptr<Stmt> Parser::parseReturnStmt() {
-  // TODO: (Semantic Analysis) check that we are inside a function to be able to return
   // we know curret token is RETURN
   Token returnKeyword = advance();
 
@@ -295,6 +292,7 @@ Token Parser::parseType() {
     return advance();
   default:
     reportError("Expected type: " + to_string(currentToken().tokenType) + " is not a type");
+    return Token();
   }
 }
 
@@ -304,7 +302,6 @@ std::vector<std::shared_ptr<ParamDecl>> Parser::parseParameters() {
   std::vector<std::shared_ptr<ParamDecl>> params = {};
 
   while (!check(RPAREN) && !check(T_EOF)) {
-    // TODO: (Semantic Analysis) think about if it will always be VAR or it can be also CONST. Check what happens in LLVM IR
     Token keyword = consume(VAR, "Expected VAR as variable definition in parameters");
     Token type = parseType();
     Token ident = consume(IDENTIFIER, "Expected IDENTIFIER in variable definition in parameters");
@@ -357,6 +354,7 @@ std::shared_ptr<Expr> Parser::parseOperand() {
   }
   default:
     reportError("Expected expression");
+    return nullptr;
   }
 }
 
@@ -440,5 +438,6 @@ Token Parser::consume(TokenType type, std::string error_msg) {
     return advance();
   } else {
     reportError(error_msg);
+    return Token();
   }
 }

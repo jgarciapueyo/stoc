@@ -2,8 +2,8 @@
 #ifndef STOC_SEMANTICANALYSIS_H
 #define STOC_SEMANTICANALYSIS_H
 
-#include "SymbolTable.h"
 #include "stoc/AST/ASTVisitor.h"
+#include "stoc/SemanticAnalysis/SymbolTable.h"
 #include "stoc/SrcFile/SrcFile.h"
 
 #include <memory>
@@ -15,12 +15,12 @@ class Semantic : public ASTVisitor {
   // It has been implemented as a subclass of the ASTVisitor, so the semantic analysis is done in
   // in every node
 
-  //TODO: add variable aliasing that facilitates codegeneration of variables with same identifier
+  // TODO: add variable aliasing that facilitates codegeneration of variables with same identifier
   // but different scopes since llvm ir is plain and does not have scopes
 public:
   /// Use to perform semantic analysis on some nodes depending on the context. For example, check
   /// check that a return statement only appears inside a function
-  enum FunctionType { NONE, FUNCTION };
+  enum class ScopeType { NONE, FUNCTION };
 
 private:
   std::shared_ptr<SrcFile> file; /// stoc source file, list of tokens and AST
@@ -32,19 +32,19 @@ private:
   int scopeLevel;
 
   // Use in function declaration
-  FunctionType functionType;
+  ScopeType scopeType;
 
   // Use in return statement inside function declaration
-  std::string returnType; // needed for type checking of return statement
+  std::shared_ptr<FunctionType> signature; // needed for type checking of return statement
 
   // Use in call expression or other nodes that need information about most recent resolved symbol
-  Symbol resolvedSymbol;
+  std::vector<Symbol> resolvedSymbols;
 
   // WRAPPER METHODS for ASTVisitor methods
-  void analyse(const std::shared_ptr<Decl>& decl);
-  void analyse(const std::shared_ptr<Expr>& expr);
-  void analyse(const std::shared_ptr<Stmt>& stmt);
-  void analyse(const std::vector<std::shared_ptr<Stmt>>& stmts);
+  void analyse(const std::shared_ptr<Decl> &decl);
+  void analyse(const std::shared_ptr<Expr> &expr);
+  void analyse(const std::shared_ptr<Stmt> &stmt);
+  void analyse(const std::vector<std::shared_ptr<Stmt>> &stmts);
 
   // HELPER METHODS
   /// It creates a new scope by creating a new symbol table
@@ -53,12 +53,18 @@ private:
   /// It ends current scope and returns \symbolTable to previous state
   void endScope();
 
-  std::pair<bool, std::string> isValidOperatorForType(const Token& op, std::string typeOperands);
-  std::pair<bool, std::string> isValidOperatorForNumericType(const Token& op, std::string typeOperands);
-  std::pair<bool, std::string> isValidOperatorForStringType(const Token& op, std::string typeOperands);
-  std::pair<bool, std::string> isValidOperatorForBoolType(const Token& op, std::string typeOperands);
+  static std::pair<bool, std::shared_ptr<Type>>
+  isValidBinaryOperatorForType(const Token &op, std::shared_ptr<Type> typeOperands);
 
-  static std::string tokenTypeToType(TokenType tokenType);
+  static std::pair<bool, std::shared_ptr<Type>>
+  isValidUnaryOperatorForType(const Token &op, std::shared_ptr<Type> typeOperands);
+
+  std::shared_ptr<Type> tokenTypeToType(Token token);
+
+  std::shared_ptr<FunctionType> createSignature(std::shared_ptr<FuncDecl> node);
+
+  void reportError(std::string error_msg, int line, int column);
+
 public:
   explicit Semantic(std::shared_ptr<SrcFile> file);
 

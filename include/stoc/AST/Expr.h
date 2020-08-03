@@ -19,6 +19,7 @@
 
 #include "stoc/AST/BasicNode.h"
 #include "stoc/Scanner/Token.h"
+#include "stoc/SemanticAnalysis/Type.h"
 
 /// An expression is a node in the AST that produces a value
 class Expr : public BasicNode, public std::enable_shared_from_this<Expr> {
@@ -32,15 +33,24 @@ public:
   /// Type of the expression of the node in the AST
   enum class Kind { BINARYEXPR, UNARYEXPR, LITERALEXPR, IDENTEXPR, CALLEXPR };
 
+  enum class ValueKind {
+    Mod_LVal, // Modifiable LValue: locator value (object that occupies memory) and can be modified
+    NMod_LVal, // NonModifiable LValue: locator value and can not be modified (i.e. constant)
+    RVal // RValue: what is not an LValue (usually literals like 4, true, ...)
+  };
+
 protected:
   Kind exprKind;
+  ValueKind exprValueKind;
 
 public:
   explicit Expr(Expr::Kind exprKind);
   [[nodiscard]] Expr::Kind getExprKind() const;
+  ValueKind getExprValueKind() const;
+  void setExprValueKind(ValueKind exprValueKind);
 
-  virtual const std::string &getType() const = 0;
-  virtual void setType(const std::string &type) = 0;
+  virtual const std::shared_ptr<Type> &getType() const = 0;
+  virtual void setType(const std::shared_ptr<Type> &type) = 0;
 };
 
 /// A binary expression is a node in the AST that contains two other nodes "joined" by an operator
@@ -54,7 +64,7 @@ private:
   Token op;
 
   /// Expression's type for type checking
-  std::string type;
+  std::shared_ptr<Type> type;
 
 public:
   BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs, Token &op);
@@ -68,8 +78,8 @@ public:
   [[nodiscard]] const Token &getOp() const;
 
   // Getters and setters
-  const std::string &getType() const override;
-  void setType(const std::string &type) override;
+  const std::shared_ptr<Type> &getType() const override;
+  void setType(const std::shared_ptr<Type> &type) override;
 };
 
 /// An unary expression is a node in the AST that contains another node and an operator
@@ -83,7 +93,7 @@ private:
   Token op;
 
   /// Expression's type for type checking
-  std::string type;
+  std::shared_ptr<Type> type;
 
 public:
   UnaryExpr(std::shared_ptr<Expr> rhs, Token &op);
@@ -96,8 +106,8 @@ public:
   [[nodiscard]] const Token &getOp() const;
 
   // Getters and setters
-  const std::string &getType() const override;
-  void setType(const std::string &type) override;
+  const std::shared_ptr<Type> &getType() const override;
+  void setType(const std::shared_ptr<Type> &type) override;
 };
 
 /// A literal expression is a node in the AST that represent integers, floats, strings,
@@ -108,7 +118,7 @@ private:
   Token token;
 
   /// Expression's type for type checking
-  std::string type;
+  std::shared_ptr<Type> type;
 
 public:
   explicit LiteralExpr(Token lit);
@@ -120,8 +130,8 @@ public:
   [[nodiscard]] const Token &getToken() const;
 
   // Getters and setters
-  const std::string &getType() const override;
-  void setType(const std::string &type) override;
+  const std::shared_ptr<Type> &getType() const override;
+  void setType(const std::shared_ptr<Type> &type) override;
 };
 
 /// An identifier expression is a node in the AST that represents an identifier
@@ -131,7 +141,10 @@ private:
   Token ident;
 
   /// Expression's type for type checking
-  std::string type;
+  std::shared_ptr<Type> type;
+
+  /// Declaration where the identifier that represents was declared
+  std::shared_ptr<Decl> declOfIdentifier;
 
 public:
   explicit IdentExpr(Token ident);
@@ -142,10 +155,12 @@ public:
   // Getters
   [[nodiscard]] const Token &getIdent() const;
   [[nodiscard]] const std::string &getName() const;
+  [[nodiscard]] const std::shared_ptr<Decl> &getDeclOfIdentifier() const;
+  void setDeclOfIdentifier(const std::shared_ptr<Decl> &declOfIdentifier);
 
   // Getters and setters
-  const std::string &getType() const override;
-  void setType(const std::string &type) override;
+  const std::shared_ptr<Type> &getType() const override;
+  void setType(const std::shared_ptr<Type> &type) override;
 };
 
 /// A call expression is a node in the AST that represents calling a function
@@ -155,7 +170,7 @@ private:
   std::vector<std::shared_ptr<Expr>> args;
 
   /// Expression's type for type checking
-  std::string type;
+  std::shared_ptr<Type> type;
 
 public:
   CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr>> args);
@@ -168,8 +183,8 @@ public:
   [[nodiscard]] const std::vector<std::shared_ptr<Expr>> &getArgs() const;
 
   // Getters and setters
-  const std::string &getType() const override;
-  void setType(const std::string &type) override;
+  const std::shared_ptr<Type> &getType() const override;
+  void setType(const std::shared_ptr<Type> &type) override;
 };
 
 #endif // STOC_EXPR_H

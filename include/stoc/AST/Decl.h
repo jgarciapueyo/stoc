@@ -20,6 +20,7 @@
 
 #include "stoc/AST/BasicNode.h"
 #include "stoc/Scanner/Token.h"
+#include "stoc/SemanticAnalysis/Type.h"
 
 /// A declaration is a node in the AST that declares a new name (variable, constant, function)
 class Decl : public BasicNode, public std::enable_shared_from_this<Decl> {
@@ -53,6 +54,9 @@ private:
   std::shared_ptr<Expr> value;
   bool isGlobalVariable;
 
+  std::shared_ptr<Type> type;
+  std::string identifierMangled;
+
 public:
   VarDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
           std::shared_ptr<Expr> value);
@@ -68,6 +72,10 @@ public:
 
   [[nodiscard]] bool isGlobal() const;
   void setIsGlobal(bool isGlobal);
+  [[nodiscard]] const std::shared_ptr<Type> &getType() const;
+  void setType(const std::shared_ptr<Type> &type);
+  const std::string &getIdentifierMangled() const;
+  void setIdentifierMangled(const std::string &identifierMangled);
 };
 
 /// A constant declaration is a node in the AST that declares and defines a constant
@@ -78,8 +86,12 @@ private:
   Token constKeywordToken;
   Token typeToken;
   Token identifierToken;
+
   std::shared_ptr<Expr> value;
   bool isGlobalConstant;
+
+  std::shared_ptr<Type> type;
+  std::string identifierMangled;
 
 public:
   ConstDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
@@ -93,8 +105,13 @@ public:
   [[nodiscard]] const Token &getTypeToken() const;
   [[nodiscard]] const Token &getIdentifierToken() const;
   [[nodiscard]] const std::shared_ptr<Expr> &getValue() const;
+
   [[nodiscard]] bool isGlobal() const;
   void setIsGlobal(bool isGlobal);
+  [[nodiscard]] const std::shared_ptr<Type> &getType() const;
+  void setType(const std::shared_ptr<Type> &type);
+  const std::string &getIdentifierMangled() const;
+  void setIdentifierMangled(const std::string &identifierMangled);
 };
 
 /// A parameter declaration is a node in the AST that declares a parameter in a function
@@ -104,6 +121,9 @@ private:
   Token keywordToken;
   Token typeToken;
   Token identifierToken;
+
+  std::shared_ptr<Type> type;
+  std::string identifierMangled;
 
 public:
   ParamDecl(Token keywordToken, Token typeToken, Token identifierToken);
@@ -115,6 +135,11 @@ public:
   [[nodiscard]] const Token &getKeywordToken() const;
   [[nodiscard]] const Token &getTypeToken() const;
   [[nodiscard]] const Token &getIdentifierToken() const;
+
+  const std::shared_ptr<Type> &getType() const;
+  void setType(const std::shared_ptr<Type> &type);
+  const std::string &getIdentifierMangled() const;
+  void setIdentifierMangled(const std::string &identifierMangled);
 };
 
 /// A function declaration is a node in the AST that declares and defines a function
@@ -129,6 +154,9 @@ private:
   /// true if function returns something, false otherwise
   bool hasReturnType;
   std::shared_ptr<BlockStmt> body;
+
+  std::shared_ptr<Type> type;
+  std::string identifierMangled;
 
 public:
   FuncDecl(Token funcKeywordToken, Token identifierToken,
@@ -148,6 +176,11 @@ public:
   [[nodiscard]] const Token &getReturnTypeToken() const;
   [[nodiscard]] bool isHasReturnType() const;
   [[nodiscard]] const std::shared_ptr<BlockStmt> &getBody() const;
+
+  const std::shared_ptr<Type> &getType() const;
+  void setType(const std::shared_ptr<Type> &type);
+  const std::string &getIdentifierMangled() const;
+  void setIdentifierMangled(const std::string &identifierMangled);
 };
 
 #endif // STOC_DECL_H

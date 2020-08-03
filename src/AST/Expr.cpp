@@ -11,6 +11,8 @@
 // Expression node
 Expr::Expr(Expr::Kind exprKind) : exprKind(exprKind) {}
 Expr::Kind Expr::getExprKind() const { return exprKind; }
+Expr::ValueKind Expr::getExprValueKind() const { return exprValueKind; }
+void Expr::setExprValueKind(Expr::ValueKind exprValueKind) { Expr::exprValueKind = exprValueKind; }
 
 // Binary Expression node
 BinaryExpr::BinaryExpr(std::shared_ptr<Expr> lhs, std::shared_ptr<Expr> rhs, Token &op)
@@ -23,8 +25,8 @@ void BinaryExpr::accept(ASTVisitor *visitor) {
 const std::shared_ptr<Expr> &BinaryExpr::getLhs() const { return lhs; }
 const std::shared_ptr<Expr> &BinaryExpr::getRhs() const { return rhs; }
 const Token &BinaryExpr::getOp() const { return op; }
-const std::string &BinaryExpr::getType() const { return type; }
-void BinaryExpr::setType(const std::string &type) { this->type = type; }
+const std::shared_ptr<Type> &BinaryExpr::getType() const { return type; }
+void BinaryExpr::setType(const std::shared_ptr<Type> &type) { this->type = type; }
 
 // Unary Expression node
 UnaryExpr::UnaryExpr(std::shared_ptr<Expr> rhs, Token &op)
@@ -36,8 +38,8 @@ void UnaryExpr::accept(ASTVisitor *visitor) {
 
 const std::shared_ptr<Expr> &UnaryExpr::getRhs() const { return rhs; }
 const Token &UnaryExpr::getOp() const { return op; }
-const std::string &UnaryExpr::getType() const { return type; }
-void UnaryExpr::setType(const std::string &type) { this->type = type; };
+const std::shared_ptr<Type> &UnaryExpr::getType() const { return type; }
+void UnaryExpr::setType(const std::shared_ptr<Type> &type) { this->type = type; }
 
 // Literal Expression node
 LiteralExpr::LiteralExpr(Token token) : token(token), Expr(Expr::Kind::LITERALEXPR) {}
@@ -47,8 +49,8 @@ void LiteralExpr::accept(ASTVisitor *visitor) {
 }
 
 const Token &LiteralExpr::getToken() const { return token; }
-const std::string &LiteralExpr::getType() const { return type; }
-void LiteralExpr::setType(const std::string &type) { this->type = type; }
+const std::shared_ptr<Type> &LiteralExpr::getType() const { return type; }
+void LiteralExpr::setType(const std::shared_ptr<Type> &type) { this->type = type; }
 
 // Identifier Expression node
 IdentExpr::IdentExpr(Token ident) : ident(ident), Expr(Expr::Kind::IDENTEXPR) {}
@@ -59,8 +61,12 @@ void IdentExpr::accept(ASTVisitor *visitor) {
 
 const Token &IdentExpr::getIdent() const { return ident; }
 const std::string &IdentExpr::getName() const { return ident.value; }
-const std::string &IdentExpr::getType() const { return type; }
-void IdentExpr::setType(const std::string &type) { this->type = type; }
+const std::shared_ptr<Type> &IdentExpr::getType() const { return type; }
+void IdentExpr::setType(const std::shared_ptr<Type> &type) { this->type = type; }
+const std::shared_ptr<Decl> &IdentExpr::getDeclOfIdentifier() const { return declOfIdentifier; }
+void IdentExpr::setDeclOfIdentifier(const std::shared_ptr<Decl> &declOfIdentifier) {
+  IdentExpr::declOfIdentifier = declOfIdentifier;
+}
 
 // Call Expression node
 CallExpr::CallExpr(std::shared_ptr<Expr> func, std::vector<std::shared_ptr<Expr>> args)
@@ -72,5 +78,5 @@ void CallExpr::accept(ASTVisitor *visitor) {
 
 const std::shared_ptr<Expr> &CallExpr::getFunc() const { return func; }
 const std::vector<std::shared_ptr<Expr>> &CallExpr::getArgs() const { return args; }
-const std::string &CallExpr::getType() const { return type; }
-void CallExpr::setType(const std::string &type) { this->type = type; }
+const std::shared_ptr<Type> &CallExpr::getType() const { return type; }
+void CallExpr::setType(const std::shared_ptr<Type> &type) { this->type = type; }

@@ -28,6 +28,12 @@ const Token &VarDecl::getIdentifierToken() const { return identifierToken; }
 const std::shared_ptr<Expr> &VarDecl::getValue() const { return value; }
 bool VarDecl::isGlobal() const { return isGlobalVariable; }
 void VarDecl::setIsGlobal(bool isGlobal) { this->isGlobalVariable = isGlobal; }
+const std::shared_ptr<Type> &VarDecl::getType() const { return type; }
+void VarDecl::setType(const std::shared_ptr<Type> &type) { this->type = type; }
+const std::string &VarDecl::getIdentifierMangled() const { return identifierMangled; }
+void VarDecl::setIdentifierMangled(const std::string &identifierMangled) {
+  VarDecl::identifierMangled = identifierMangled;
+}
 
 // Constant Declaration node
 ConstDecl::ConstDecl(Token constKeywordToken, Token typeToken, Token identifierToken,
@@ -45,6 +51,12 @@ const Token &ConstDecl::getIdentifierToken() const { return identifierToken; }
 const std::shared_ptr<Expr> &ConstDecl::getValue() const { return value; }
 bool ConstDecl::isGlobal() const { return isGlobalConstant; }
 void ConstDecl::setIsGlobal(bool isGlobal) { this->isGlobalConstant = isGlobal; }
+const std::shared_ptr<Type> &ConstDecl::getType() const { return type; }
+void ConstDecl::setType(const std::shared_ptr<Type> &type) { this->type = type; }
+const std::string &ConstDecl::getIdentifierMangled() const { return identifierMangled; }
+void ConstDecl::setIdentifierMangled(const std::string &identifierMangled) {
+  ConstDecl::identifierMangled = identifierMangled;
+}
 
 // Parameter Declaration node
 ParamDecl::ParamDecl(Token keywordToken, Token typeToken, Token identifierToken)
@@ -58,6 +70,12 @@ void ParamDecl::accept(ASTVisitor *visitor) {
 const Token &ParamDecl::getKeywordToken() const { return keywordToken; }
 const Token &ParamDecl::getTypeToken() const { return typeToken; }
 const Token &ParamDecl::getIdentifierToken() const { return identifierToken; }
+const std::shared_ptr<Type> &ParamDecl::getType() const { return type; }
+void ParamDecl::setType(const std::shared_ptr<Type> &type) { this->type = type; }
+const std::string &ParamDecl::getIdentifierMangled() const { return identifierMangled; }
+void ParamDecl::setIdentifierMangled(const std::string &identifierMangled) {
+  ParamDecl::identifierMangled = identifierMangled;
+}
 
 // Function Declaration node
 FuncDecl::FuncDecl(Token funcKeywordToken, Token identifierToken,
@@ -82,3 +100,9 @@ const std::vector<std::shared_ptr<ParamDecl>> &FuncDecl::getParams() const { ret
 const Token &FuncDecl::getReturnTypeToken() const { return returnTypeToken; }
 bool FuncDecl::isHasReturnType() const { return hasReturnType; }
 const std::shared_ptr<BlockStmt> &FuncDecl::getBody() const { return body; }
+const std::shared_ptr<Type> &FuncDecl::getType() const { return type; }
+void FuncDecl::setType(const std::shared_ptr<Type> &type) { this->type = type; }
+const std::string &FuncDecl::getIdentifierMangled() const { return identifierMangled; }
+void FuncDecl::setIdentifierMangled(const std::string &identifierMangled) {
+  FuncDecl::identifierMangled = identifierMangled;
+}

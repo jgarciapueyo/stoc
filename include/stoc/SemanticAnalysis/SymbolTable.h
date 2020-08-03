@@ -2,7 +2,7 @@
 #ifndef STOC_SYMBOLTABLE_H
 #define STOC_SYMBOLTABLE_H
 
-#include "Symbol.h"
+#include "stoc/SemanticAnalysis/Symbol.h"
 #include "stoc/Scanner/Token.h"
 
 #include <memory>
@@ -17,10 +17,16 @@ private:
   std::shared_ptr<SymbolTable> previousTable;
 
   /// Table of the current scope
-  std::unordered_map<std::string, Symbol> table;
+  std::unordered_map<std::string, std::vector<Symbol>> table;
 
   /// Depth level of the scope associated with this SymbolTable
   int level;
+
+  /// use to insert function
+  void insertFunction(std::string identifier, Symbol symbol);
+
+  /// use to insert variables/constants/parameters
+  void insertVariable(std::string identifier, Symbol symbol);
 
 public:
   explicit SymbolTable(int level);
@@ -34,7 +40,7 @@ public:
   /// Looks \identifier up in the current SymbolTable and, if not found, looks up in previous table.
   ///  If it is found, it returns the Symbol associated with the identifier.
   ///  If \identifier is not found in any SymbolTable, it raises an exception.
-  Symbol lookup(std::string identifier);
+  std::vector<Symbol> lookup(std::string identifier);
 
   /// It inserts \symbol associated with \identifier in the current scope/SymbolTable.
   ///  If there is already a \symbol associated with \identifier in the current scope/SymbolTable

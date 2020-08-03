@@ -5,8 +5,12 @@
 #include "stoc/AST/Decl.h"
 #include "stoc/AST/Expr.h"
 #include "stoc/AST/Stmt.h"
+#include "stoc/SemanticAnalysis/Type.h"
 
-Semantic::Semantic(std::shared_ptr<SrcFile> file) : file(file), scopeLevel(0), functionType(NONE) {
+#include <unordered_map>
+
+Semantic::Semantic(std::shared_ptr<SrcFile> file)
+    : file(file), scopeLevel(0), scopeType(ScopeType::NONE) {
   this->symbolTable = std::make_shared<SymbolTable>(0);
 }
 
@@ -28,8 +32,6 @@ void Semantic::analyse(const std::vector<std::shared_ptr<Stmt>> &stmts) {
   }
 }
 
-// TODO: improve scopes so Semantic does not have to know how SymbolTable is implemented
-//  only SymbolTable.newScope(), SymbolTable.oldScope()
 void Semantic::beginScope() {
   scopeLevel++;
   std::shared_ptr<SymbolTable> currentSymbolTable =
@@ -42,103 +44,167 @@ void Semantic::endScope() {
   scopeLevel--;
 }
 
-std::pair<bool, std::string> Semantic::isValidOperatorForType(const Token &op,
-                                                              std::string typeOperands) {
-  if (typeOperands == "int" || typeOperands == "float") {
-    return isValidOperatorForNumericType(op, typeOperands);
-  } else if (typeOperands == "string") {
-    return isValidOperatorForStringType(op, typeOperands);
-  } else if (typeOperands == "bool") {
-    return isValidOperatorForBoolType(op, typeOperands);
-  } else {
-    // TODO: improve error handling
-    std::cerr << "Type checking: type is not recognized " << std::endl;
-    exit(1);
+void Semantic::reportError(std::string error_msg, int line, int column) {
+  std::cerr << "<" << this->file->getFilename() << ":l" << line << ":c" << column
+            << "> Semantic analysis error: " << error_msg << std::endl;
+
+  this->file->setErrorInSemanticAnalysis(true);
+}
+
+bool isNumeric(std::shared_ptr<Type> type) {
+  switch (type->getTypeKind()) {
+  case Type::Kind::BasicType:
+    return std::dynamic_pointer_cast<BasicType>(type)->isNumeric();
+  case Type::Kind::Signature:
+    return false;
+  default:
+    return false;
   }
 }
 
-std::pair<bool, std::string> Semantic::isValidOperatorForNumericType(const Token &op,
-                                                                     std::string typeOperands) {
-  switch (op.tokenType) {
-  case ADD:
-  case SUB:
-  case STAR:
-  case SLASH:
-    return std::make_pair(true, typeOperands);
+bool isString(std::shared_ptr<Type> type) {
+  switch (type->getTypeKind()) {
+  case Type::Kind::BasicType:
+    return std::dynamic_pointer_cast<BasicType>(type)->isString();
+  case Type::Kind::Signature:
+    return false;
+  default:
+    return false;
+  }
+}
+
+bool isBoolean(std::shared_ptr<Type> type) {
+  switch (type->getTypeKind()) {
+  case Type::Kind::BasicType:
+    return std::dynamic_pointer_cast<BasicType>(type)->isBoolean();
+  case Type::Kind::Signature:
+    return false;
+  default:
+    return false;
+  }
+}
+
+bool isComparable(std::shared_ptr<Type> type) {
+  switch (type->getTypeKind()) {
+  case Type::Kind::BasicType:
+    return std::dynamic_pointer_cast<BasicType>(type)->isComparable();
+  case Type::Kind::Signature:
+    return false;
+  default:
+    return false;
+  }
+}
+
+bool isOrdered(std::shared_ptr<Type> type) {
+  switch (type->getTypeKind()) {
+  case Type::Kind::BasicType:
+    return std::dynamic_pointer_cast<BasicType>(type)->isOrdered();
+  case Type::Kind::Signature:
+    return false;
+  default:
+    return false;
+  }
+}
+
+bool isComparator(TokenType tokenType) {
+  switch (tokenType) {
   case EQUAL:
   case NOT_EQUAL:
   case LESS:
   case GREATER:
   case LESS_EQUAL:
   case GREATER_EQUAL:
-    return std::make_pair(true, "bool");
+    return true;
   default:
-    return std::make_pair(false, "");
+    return false;
   }
 }
 
-std::pair<bool, std::string> Semantic::isValidOperatorForStringType(const Token &op,
-                                                                    std::string typeOperands) {
-  switch (op.tokenType) {
-  // TODO: check if we can implement addition of strings in llvm ir
-  case ADD:
-    return std::make_pair(true, typeOperands);
-  case EQUAL:
-  case NOT_EQUAL:
-    return std::make_pair(true, typeOperands);
-  default:
-    return std::make_pair(false, "");
+bool passRequirements(std::vector<std::function<bool(std::shared_ptr<Type>)>> requirements,
+                      std::shared_ptr<Type> type) {
+  for (const auto &requirement : requirements) {
+    if (!requirement(type)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+std::pair<bool, std::shared_ptr<Type>>
+Semantic::isValidBinaryOperatorForType(const Token &op, std::shared_ptr<Type> typeOperands) {
+  static std::unordered_map<TokenType, std::vector<std::function<bool(std::shared_ptr<Type>)>>>
+      binaryOp = {
+          {ADD, {[](std::shared_ptr<Type> t) { return isNumeric(t) || isString(t); }}},
+          {SUB, {isNumeric}},
+          {STAR, {isNumeric}},
+          {SLASH, {isNumeric}},
+          {EQUAL, {isComparable}},
+          {NOT_EQUAL, {isComparable}},
+          {LESS, {isOrdered}},
+          {GREATER, {isOrdered}},
+          {LESS_EQUAL, {isOrdered}},
+          {GREATER_EQUAL, {isOrdered}},
+          {LAND, {isBoolean}},
+          {LOR, {isBoolean}},
+      };
+
+  auto requirements = binaryOp.find(op.tokenType);
+  if (requirements != binaryOp.end() && passRequirements(requirements->second, typeOperands)) {
+    return {true, isComparator(op.tokenType) ? BasicType::getBoolType() : typeOperands};
+  } else {
+    return {false, nullptr};
   }
 }
 
-std::pair<bool, std::string> Semantic::isValidOperatorForBoolType(const Token &op,
-                                                                  std::string typeOperands) {
-  switch (op.tokenType) {
-  case LAND:
-  case LOR:
-  case NOT:
-  case EQUAL:
-  case NOT_EQUAL:
-    return std::make_pair(true, typeOperands);
-  default:
-    return std::make_pair(false, "");
+std::pair<bool, std::shared_ptr<Type>>
+Semantic::isValidUnaryOperatorForType(const Token &op, std::shared_ptr<Type> typeOperands) {
+  static std::unordered_map<TokenType, std::vector<std::function<bool(std::shared_ptr<Type>)>>>
+      unaryOp = {{ADD, {isNumeric}}, {SUB, {isNumeric}}, {NOT, {isBoolean}}};
+
+  auto requirements = unaryOp.find(op.tokenType);
+  if (requirements != unaryOp.end() && passRequirements(requirements->second, typeOperands)) {
+    return {true, isComparator(op.tokenType) ? BasicType::getBoolType() : typeOperands};
+  } else {
+    return {false, nullptr};
   }
 }
 
-// TODO: improve because we are using the token types from scanning and parsing in semantic analysis
-//  which has drawbacks, like the repetition of the concept type for many things. Maybe create new
-//  enum or class
-//  Also change and add type to other AST nodes like VarDecl, ParamDecl, etc..
-std::string Semantic::tokenTypeToType(TokenType tokenType) {
-  switch (tokenType) {
+std::shared_ptr<Type> Semantic::tokenTypeToType(Token token) {
+  switch (token.tokenType) {
   case LIT_TRUE:
   case LIT_FALSE:
-    return "bool";
+  case BOOL:
+    return BasicType::getBoolType();
   case LIT_INT:
-    return "int";
+  case INT:
+    return BasicType::getIntType();
   case LIT_FLOAT:
-    return "float";
+  case FLOAT:
+    return BasicType::getFloatType();
   case LIT_STRING:
-    return "string";
+  case STRING:
+    return BasicType::getStringType();
   default:
-    // TODO: improve error handling
-    std::cout << "token type not recognized" << std::endl;
-    exit(1);
+    reportError("Internal Error - Token type not recognized", token.line, token.line);
+    return BasicType::getInvalidType();
   }
 }
 
 void Semantic::visit(std::shared_ptr<VarDecl> node) {
   // Do semantic analysis of initializer expression (needed to calculate type)
-  auto value = node->getValue();
-  analyse(value);
+  analyse(node->getValue());
 
   // Type checking
-  if (to_string(node->getTypeToken().tokenType) != node->getValue()->getType()) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getVarKeywordToken().value << " <l."
-              << node->getVarKeywordToken().line << ":c." << node->getVarKeywordToken().column
-              << ">" << std::endl;
-    exit(1);
+  node->setType(tokenTypeToType(node->getTypeToken()));
+
+  // if node->getValue() is invalid, the error during initialization has already been reported and
+  // we do not have to do nothing.
+  if (!node->getValue()->getType()->isInvalid()) {
+    if (!typeIsEqual(node->getType(), node->getValue()->getType())) {
+      reportError("Type checking: different types " + node->getType()->getName() + " and " +
+                      node->getValue()->getType()->getName(),
+                  node->getTypeToken().line, node->getTypeToken().column);
+    }
   }
 
   // Update information about if constant declaration is global
@@ -146,12 +212,12 @@ void Semantic::visit(std::shared_ptr<VarDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new variable
-  Symbol symbol(node->getIdentifierToken().value, Symbol::VARIABLE,
-                to_string(node->getTypeToken().tokenType));
-  // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
-  //  right now, we first insert and later assign so is permitted, maybe better to flip
-  //  the following two actions
-  symbolTable->insert(symbol.getIdentifier(), symbol);
+  Symbol symbol(node->getIdentifierToken().value, Symbol::Kind::VARIABLE, node->getType(), node);
+  try {
+    symbolTable->insert(symbol.getIdentifier(), symbol);
+  } catch (std::runtime_error &e) {
+    reportError(e.what(), node->getIdentifierToken().line, node->getIdentifierToken().column);
+  }
 }
 
 void Semantic::visit(std::shared_ptr<ConstDecl> node) {
@@ -159,12 +225,16 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   analyse(node->getValue());
 
   // Type checking
-  if (to_string(node->getTypeToken().tokenType) != node->getValue()->getType()) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getConstKeywordToken().value << " <l."
-              << node->getConstKeywordToken().line << ":c." << node->getConstKeywordToken().column
-              << ">" << std::endl;
-    exit(1);
+  node->setType(tokenTypeToType(node->getTypeToken()));
+
+  // if node->getValue() is invalid, the error during initialization has been already reported and
+  // we do not have to do nothing.
+  if (!node->getValue()->getType()->isInvalid()) {
+    if (!typeIsEqual(node->getType(), node->getValue()->getType())) {
+      reportError("Type checking: different types " + node->getType()->getName() + " and " +
+                      node->getValue()->getType()->getName(),
+                  node->getTypeToken().line, node->getTypeToken().column);
+    }
   }
 
   // Update information about if constant declaration is global
@@ -172,36 +242,56 @@ void Semantic::visit(std::shared_ptr<ConstDecl> node) {
   node->setIsGlobal(isGlobal);
 
   // Update symbol table with new constant
-  Symbol symbol(node->getIdentifierToken().value, Symbol::CONSTANT,
-                to_string(node->getTypeToken().tokenType));
-  // TODO: check if this var int a = a + 1; is permitted if second a is in outer scope
-  //  right now, we first insert and later assign so is permitted, maybe better to flip
-  //  the following two actions
-  symbolTable->insert(symbol.getIdentifier(), symbol);
+  Symbol symbol(node->getIdentifierToken().value, Symbol::Kind::CONSTANT, node->getType(), node);
+  try {
+    symbolTable->insert(symbol.getIdentifier(), symbol);
+  } catch (std::runtime_error &e) {
+    reportError(e.what(), node->getIdentifierToken().line, node->getIdentifierToken().column);
+  }
 }
 
 void Semantic::visit(std::shared_ptr<ParamDecl> node) {
-  // Update symbol table with new constant
-  Symbol symbol(node->getIdentifierToken().value, Symbol::PARAMETER,
-                to_string(node->getTypeToken().tokenType));
-  symbolTable->insert(symbol.getIdentifier(), symbol);
+  // Type checking
+  node->setType(tokenTypeToType(node->getTypeToken()));
+
+  // Update symbol table with new parameter
+  Symbol symbol(node->getIdentifierToken().value, Symbol::Kind::PARAMETER, node->getType(), node);
+  try {
+    symbolTable->insert(symbol.getIdentifier(), symbol);
+  } catch (std::runtime_error &e) {
+    reportError(e.what(), node->getIdentifierToken().line, node->getIdentifierToken().column);
+  }
+}
+
+std::shared_ptr<FunctionType> Semantic::createSignature(std::shared_ptr<FuncDecl> node) {
+  std::vector<std::shared_ptr<BasicType>> params;
+
+  for (const auto &parameter : node->getParams()) {
+    params.push_back(
+        std::dynamic_pointer_cast<BasicType>(tokenTypeToType(parameter->getTypeToken())));
+  }
+
+  std::shared_ptr<BasicType> returnType = nullptr;
+  if (node->isHasReturnType()) {
+    returnType = std::dynamic_pointer_cast<BasicType>(tokenTypeToType(node->getReturnTypeToken()));
+  } else {
+    returnType = BasicType::getVoidType();
+  }
+  return std::make_shared<FunctionType>(params, returnType);
 }
 
 void Semantic::visit(std::shared_ptr<FuncDecl> node) {
-  Semantic::FunctionType previousFunctionType = functionType;
-  functionType = Semantic::FUNCTION;
-  // TODO: check if make returnType a class or enum instead of string
-  returnType = node->isHasReturnType() ? to_string(node->getReturnTypeToken().tokenType) : "void";
-
-  // Need type of arguments to check later when function is called
-  std::vector<std::string> parameterListType;
-  for (const auto &parameter : node->getParams()) {
-    parameterListType.push_back(to_string(parameter->getTypeToken().tokenType));
-  }
+  auto prevScopeType = scopeType;
+  scopeType = Semantic::ScopeType::FUNCTION;
+  signature = createSignature(node);
 
   // Insert function identifier in scope
-  Symbol symbol(node->getIdentifierToken().value, Symbol::FUNCTION, returnType, parameterListType);
-  symbolTable->insert(symbol.getIdentifier(), symbol);
+  Symbol symbol(node->getIdentifierToken().value, Symbol::Kind::FUNCTION, signature, node);
+  try {
+    symbolTable->insert(symbol.getIdentifier(), symbol);
+  } catch (std::runtime_error &e) {
+    reportError(e.what(), node->getIdentifierToken().line, node->getIdentifierToken().column);
+  }
 
   // Analyse parameters and body of the function
   beginScope();
@@ -217,8 +307,7 @@ void Semantic::visit(std::shared_ptr<FuncDecl> node) {
   endScope();
 
   // Restore previous values
-  functionType = previousFunctionType;
-  returnType = "";
+  scopeType = prevScopeType;
 }
 
 void Semantic::visit(std::shared_ptr<DeclarationStmt> node) { analyse(node->getDecl()); }
@@ -235,12 +324,12 @@ void Semantic::visit(std::shared_ptr<IfStmt> node) {
   analyse(node->getCondition());
 
   // Type checking for condition
-  if (node->getCondition()->getType() != "bool") {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types in condition " << node->getIfKeyword().value
-              << " <l." << node->getIfKeyword().line << ":c." << node->getIfKeyword().column << ">"
-              << std::endl;
-    exit(1);
+  auto t = std::dynamic_pointer_cast<BasicType>(node->getCondition()->getType());
+  if (t == nullptr || !t->isBoolean()) {
+    reportError("Type checking: type of condition in if statement should be 'bool' but "
+                "found " +
+                    node->getCondition()->getType()->getName(),
+                node->getIfKeyword().line, node->getIfKeyword().column);
   }
 
   analyse(node->getThenBranch());
@@ -256,12 +345,12 @@ void Semantic::visit(std::shared_ptr<ForStmt> node) {
   analyse(node->getCond());
 
   // Type checking for condition
-  if (node->getCond()->getType() != "bool") {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types in condition " << node->getForKeyword().value
-              << " <l." << node->getForKeyword().line << ":c." << node->getForKeyword().column
-              << ">" << std::endl;
-    exit(1);
+  auto t = std::dynamic_pointer_cast<BasicType>(node->getCond()->getType());
+  if (t == nullptr || !t->isBoolean()) {
+    reportError("Type checking: type of condition in for statement should be 'bool' but "
+                "found " +
+                    node->getCond()->getType()->getName(),
+                node->getForKeyword().line, node->getForKeyword().column);
   }
 
   analyse(node->getPost());
@@ -277,12 +366,12 @@ void Semantic::visit(std::shared_ptr<WhileStmt> node) {
   analyse(node->getCond());
 
   // Type checking for condition
-  if (node->getCond()->getType() != "bool") {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types in condition " << node->getWhileKeyword().value
-              << " <l." << node->getWhileKeyword().line << ":c." << node->getWhileKeyword().column
-              << ">" << std::endl;
-    exit(1);
+  auto t = std::dynamic_pointer_cast<BasicType>(node->getCond()->getType());
+  if (t == nullptr || !t->isBoolean()) {
+    reportError("Type checking: type of condition in while statement should be 'bool' but "
+                "found " +
+                    node->getCond()->getType()->getName(),
+                node->getWhileKeyword().line, node->getWhileKeyword().column);
   }
 
   beginScope();
@@ -291,137 +380,183 @@ void Semantic::visit(std::shared_ptr<WhileStmt> node) {
 }
 
 void Semantic::visit(std::shared_ptr<AssignmentStmt> node) {
-  analyse(node->getRhs());
+  // check that it is assignable
   analyse(node->getLhs());
+  analyse(node->getRhs());
+
+  // Expression on the left hand side can be assigned
+  if (node->getLhs()->getExprValueKind() == Expr::ValueKind::RVal) {
+    reportError("Expression is not assignable", node->getEqualToken().line,
+                node->getEqualToken().column);
+  } else if (node->getLhs()->getExprValueKind() == Expr::ValueKind::NMod_LVal) {
+    reportError("Expression is not assignable (constant)", node->getEqualToken().line,
+                node->getEqualToken().column);
+  }
 
   // Type checking
-  if (node->getRhs()->getType() != node->getLhs()->getType()) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getEqualToken().value << " <l."
-              << node->getEqualToken().line << ":c." << node->getEqualToken().column << ">"
-              << std::endl;
-    exit(1);
+  if (!typeIsEqual(node->getRhs()->getType(), node->getLhs()->getType())) {
+    reportError("Type checking: cannot assign type " + node->getRhs()->getType()->getName() +
+                    " to type " + node->getLhs()->getType()->getName(),
+                node->getEqualToken().line, node->getEqualToken().column);
   }
 }
 
 void Semantic::visit(std::shared_ptr<ReturnStmt> node) {
-  if (functionType != Semantic::FUNCTION) {
-    file->setErrorInSemanticAnalysis(true);
-    // TODO: add file->addError() to add descriptive string to this message
+  if (scopeType != Semantic::ScopeType::FUNCTION) {
+    reportError("return statement outside function body", node->getReturnKeyword().line,
+                node->getReturnKeyword().column);
   } else {
     analyse(node->getValue());
 
     // Type checking
-    if (node->getValue()->getType() != this->returnType) {
-      // TODO: improve error handling
-      std::cerr << "Type checking: different types " << node->getReturnKeyword().value << " <l."
-                << node->getReturnKeyword().line << ":c." << node->getReturnKeyword().column << ">"
-                << std::endl;
-      exit(1);
+    if (!typeIsEqual(node->getValue()->getType(), this->signature->getResult())) {
+      reportError("Type checking: different types of returned value of type " +
+                      node->getValue()->getType()->getName() +
+                      " and function return value of type " + this->signature->getName(),
+                  node->getReturnKeyword().line, node->getReturnKeyword().column);
     }
   }
 }
 
 void Semantic::visit(std::shared_ptr<BinaryExpr> node) {
+  // Do semantic analysis of both expressions
   analyse(node->getLhs());
   analyse(node->getRhs());
 
-  // Type checking both operands are of same type
-  if (node->getRhs()->getType() != node->getLhs()->getType()) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: different types " << node->getOp().value << " <l."
-              << node->getOp().line << ":c." << node->getOp().column << ">" << std::endl;
-    exit(1);
+  // Type checking if non of the operators are invalid. If any of the operators is invalid, the
+  // error has already been reported and we do nothing.
+  if (node->getLhs()->getType()->isInvalid() || node->getRhs()->getType()->isInvalid()) {
+    node->setType(BasicType::getInvalidType());
+    return;
+  }
+
+  // Type checking
+  if (!typeIsEqual(node->getLhs()->getType(), node->getRhs()->getType())) {
+    reportError("Type checking: different types " + node->getLhs()->getType()->getName() + " and " +
+                    node->getRhs()->getType()->getName(),
+                node->getOp().line, node->getOp().column);
   }
 
   // Type checking that operator is valid for types
-  auto [isValid, type] = isValidOperatorForType(node->getOp(), node->getRhs()->getType());
+  auto [isValid, type] = isValidBinaryOperatorForType(node->getOp(), node->getRhs()->getType());
 
   if (!isValid) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: type is not compatible with operand " << node->getOp().value
-              << " <l." << node->getOp().line << ":c." << node->getOp().column << ">" << std::endl;
-    exit(1);
+    reportError("Operator is not supported for binary expression of type " +
+                    node->getRhs()->getType()->getName(),
+                node->getOp().line, node->getOp().column);
   }
-
   node->setType(type);
+  node->setExprValueKind(Expr::ValueKind::RVal);
 }
 
 void Semantic::visit(std::shared_ptr<UnaryExpr> node) {
+  // Do semantic analysis of expression
   analyse(node->getRhs());
 
-  bool isValid = false;
-  std::string type = "";
-
-  if (node->getRhs()->getType() == "int" || node->getRhs()->getType() == "float") {
-    std::tie(isValid, type) =
-        isValidOperatorForNumericType(node->getOp(), node->getRhs()->getType());
-  } else if (node->getRhs()->getType() == "string") {
-    std::tie(isValid, type) =
-        isValidOperatorForStringType(node->getOp(), node->getRhs()->getType());
-  } else if (node->getRhs()->getType() == "bool") {
-    std::tie(isValid, type) =
-        isValidOperatorForNumericType(node->getOp(), node->getRhs()->getType());
+  // Type checking if the operator is invalid. If  is invalid, the error has already been reported
+  // and we do nothing.
+  if (node->getRhs()->getType()->isInvalid()) {
+    node->setType(BasicType::getInvalidType());
+    return;
   }
+
+  // Type checking that operator is valid for type
+  auto [isValid, type] = isValidUnaryOperatorForType(node->getOp(), node->getRhs()->getType());
 
   if (!isValid) {
-    // TODO: improve error handling
-    std::cerr << "Type checking: type is not compatible with operand " << node->getOp().value
-              << " <l." << node->getOp().line << ":c." << node->getOp().column << ">" << std::endl;
-    exit(1);
+    reportError("Operator is not supported for unary expression of type " +
+                    node->getRhs()->getType()->getName(),
+                node->getOp().line, node->getOp().column);
   }
-
   node->setType(type);
+  // Right now, all unary operators create a RValue. If we had arrays [] or address operators &,
+  // we would have to check the current ExprValueKind and what it results from applying the unary op
+  node->setExprValueKind(Expr::ValueKind::RVal);
 }
 
 void Semantic::visit(std::shared_ptr<LiteralExpr> node) {
-  std::string type = tokenTypeToType(node->getToken().tokenType);
-  node->setType(type);
+  // Type checking
+  node->setType(tokenTypeToType(node->getToken()));
+  node->setExprValueKind(Expr::ValueKind::RVal);
 }
 
 void Semantic::visit(std::shared_ptr<IdentExpr> node) {
-  // TODO: improve and check only in current scope only so a = a+1; is not allowed
-  Symbol symbol = symbolTable->lookup(node->getName());
-  node->setType(symbol.getReturnType());
+  try {
+    std::vector<Symbol> symbols = symbolTable->lookup(node->getName());
 
-  // Update field to keep track of most recent resolved symbol for a function
-  if (symbol.getType() == Symbol::FUNCTION) {
-    resolvedSymbol = symbol;
+    // if any of the symbol is a function we do nothing since we have already resolved the symbol
+    // and now is the CallExpr node who will processed that
+    if (symbols.empty()) {
+      reportError("Internal Error - Identifier found but not symbol associated",
+                  node->getIdent().line, node->getIdent().column);
+    }
+
+    if (symbols[0].getKind() == Symbol::Kind::FUNCTION) {
+      resolvedSymbols = symbols;
+      return;
+    }
+
+    if (symbols.size() > 1) {
+      reportError("Internal Error - Multiple identifier of kind "
+                  "variable/constant/parameter",
+                  node->getIdent().line, node->getIdent().column);
+    }
+
+    // is a variable/constant/parameter
+    node->setType(symbols[0].getType());
+
+    // If identifer is a constant, it can not be modified
+    if (symbols[0].getKind() == Symbol::Kind::CONSTANT) {
+      node->setExprValueKind(Expr::ValueKind::NMod_LVal);
+    } else {
+      node->setExprValueKind(Expr::ValueKind::Mod_LVal);
+    }
+
+    node->setDeclOfIdentifier(symbols[0].getDeclReference());
+  } catch (std::runtime_error &e) {
+    reportError(e.what(), node->getIdent().line, node->getIdent().column);
+    node->setType(BasicType::getInvalidType());
   }
 }
 
 void Semantic::visit(std::shared_ptr<CallExpr> node) {
-  // TODO: type checking of parameters
   analyse(node->getFunc());
-  Symbol previousResolvedSymbol = resolvedSymbol;
+  // Save the identifier symbols of our function
+  auto previousResolvedSymbols = resolvedSymbols;
 
   for (const auto &argument : node->getArgs()) {
     analyse(argument);
   }
 
-  resolvedSymbol = previousResolvedSymbol;
+  // Restore previous resolved symbols
+  resolvedSymbols = previousResolvedSymbols;
 
-  // Type checking for arguments
-  if (node->getArgs().size() != resolvedSymbol.getParameterList().size()) {
-    // TODO: improve error handling
-    // TODO: improve fields of callExpr node to have some token to show where the error is
-    std::cerr << "Type checking: number of arguments is different from number of parameters"
-              << std::endl;
-    exit(1);
+  // Construct type of our call (basic type because for now we only have this)
+  std::vector<std::shared_ptr<BasicType>> args;
+  for (const auto &arg : node->getArgs()) {
+    args.push_back(std::dynamic_pointer_cast<BasicType>(arg->getType()));
   }
 
-  auto itArgs = node->getArgs().begin();
-  auto itParams = resolvedSymbol.getParameterList().begin();
-
-  while (itArgs != node->getArgs().end() && itParams != resolvedSymbol.getParameterList().end()) {
-    if ((*itArgs)->getType() != (*itParams)) {
-      // TODO: improve error handling
-      std::cerr << "Type checking: type of parameters is different" << std::endl;
-      exit(1);
+  Symbol resolvedSymbol;
+  bool foundSymbol = false;
+  for (auto const &possibleSymbol : resolvedSymbols) {
+    if (areParametersEqual(
+            args, std::dynamic_pointer_cast<FunctionType>(possibleSymbol.getType())->getParams())) {
+      resolvedSymbol = possibleSymbol;
+      foundSymbol = true;
     }
-    itArgs++;
-    itParams++;
   }
 
-  node->setType(node->getFunc()->getType());
+  if (foundSymbol) {
+    auto functionType = std::dynamic_pointer_cast<FunctionType>(resolvedSymbol.getType());
+    node->setType(functionType->getResult());
+    node->getFunc()->setType(resolvedSymbol.getType());
+    std::dynamic_pointer_cast<IdentExpr>(node->getFunc())
+        ->setDeclOfIdentifier(resolvedSymbol.getDeclReference());
+  } else {
+    reportError("Undefined reference to " + resolvedSymbols[0].getIdentifier(),
+                std::dynamic_pointer_cast<IdentExpr>(node->getFunc())->getIdent().line,
+                std::dynamic_pointer_cast<IdentExpr>(node->getFunc())->getIdent().column);
+    node->setType(BasicType::getInvalidType());
+  }
 }

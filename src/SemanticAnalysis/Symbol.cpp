@@ -1,15 +1,10 @@
 // TODO: add header of the file
 #include "stoc/SemanticAnalysis/Symbol.h"
 
-Symbol::Symbol(std::string identifier, SymbolType type, std::string returnType)
-    : identifier(identifier), type(type), returnType(returnType) {}
-
-Symbol::Symbol(std::string identifier, SymbolType type, std::string returnType,
-               std::vector<std::string> parameterListType)
-    : identifier(identifier), type(type), returnType(returnType),
-      parameterListType(parameterListType) {}
+Symbol::Symbol(std::string identifier, Symbol::Kind kind, std::shared_ptr<Type> type, std::shared_ptr<Decl> declReference)
+    : identifier(identifier), kind(kind), type(type), declReference(declReference) {}
 
 const std::string &Symbol::getIdentifier() const { return identifier; }
-Symbol::SymbolType Symbol::getType() const { return type; }
-const std::vector<std::string> &Symbol::getParameterList() const { return parameterListType; }
-const std::string &Symbol::getReturnType() const { return returnType; }
+Symbol::Kind Symbol::getKind() const { return kind; }
+std::shared_ptr<Type> Symbol::getType() const { return type; }
+const std::shared_ptr<Decl> &Symbol::getDeclReference() const { return declReference; };

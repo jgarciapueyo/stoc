@@ -1,5 +1,6 @@
 // TODO: add header of the file
 #include "stoc/SemanticAnalysis/SymbolTable.h"
+#include "stoc/SemanticAnalysis/Type.h"
 
 SymbolTable::SymbolTable(int level) : level(level) {}
 
@@ -9,27 +10,60 @@ SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> previousTable, int level)
 const std::shared_ptr<SymbolTable> &SymbolTable::getPreviousTable() const { return previousTable; }
 int SymbolTable::getLevel() const { return level; }
 
-Symbol SymbolTable::lookup(std::string identifier) {
+std::vector<Symbol> SymbolTable::lookup(std::string identifier) {
   auto it = table.find(identifier);
-  if(it == this->table.end()) { // it has not been found in current scope
-    if(level == 0) { // if it is last scope, \identifier has not been found
+  if (it == this->table.end()) { // it has not been found in current scope
+    if (level == 0) {            // if it is last scope, \identifier has not been found
       throw std::runtime_error("Undefined reference to " + identifier);
-    }
-    else { // look in previous scope/SymbolTable
+    } else { // look in previous scope/SymbolTable
       return this->previousTable->lookup(identifier);
     }
-  }
-  else {
+  } else {
     return it->second;
   }
 }
 
-void SymbolTable::insert(std::string identifier, Symbol symbol) {
+void SymbolTable::insertFunction(std::string identifier, Symbol symbol) {
   auto it = table.find(identifier);
-  if(it == this->table.end()) { // it has not been found in current scope
-    table.insert({identifier, symbol});
+  if (it == this->table.end()) { // it has not been found in current scope we can insert it
+    table.insert({identifier, {symbol}});
+  } else {
+    // because we allow overloading of functions, maybe the identifier that exists is a function
+    // with different type
+    std::vector<Symbol> symbols = it->second;
+    if (symbols[0].getKind() != Symbol::Kind::FUNCTION) {
+      // symbol in symbol table is a variable/constant/parameter so we can not insert the function
+      throw std::runtime_error("Redefinition of '" + identifier + "'");
+    }
+
+    // symbol identifier in symbolTable is a function. We can insert the new function if parameter
+    // types of all functions are different (overload of functions)
+    for (const auto &functionSymbol : symbols) {
+      if (areParametersEqual(
+              std::dynamic_pointer_cast<FunctionType>(functionSymbol.getType())->getParams(),
+              std::dynamic_pointer_cast<FunctionType>(symbol.getType())->getParams())) {
+        throw std::runtime_error("Redefinition of '" + identifier + "'");
+      }
+    }
+
+    // If all functions with same identifier have different parameter types, we insert the new one
+    it->second.push_back(symbol);
   }
-  else {
+}
+
+void SymbolTable::insertVariable(std::string identifier, Symbol symbol) {
+  auto it = table.find(identifier);
+  if (it == this->table.end()) { // it has not been found in current scope we can insert it
+    table.insert({identifier, {symbol}});
+  } else { // we can not insert it
     throw std::runtime_error("Redefinition of '" + identifier + "'");
+  }
+}
+
+void SymbolTable::insert(std::string identifier, Symbol symbol) {
+  if (symbol.getKind() == Symbol::Kind::FUNCTION) {
+    insertFunction(identifier, symbol);
+  } else { // is VARIABLE/CONSTANT/PARAMETER
+    insertVariable(identifier, symbol);
   }
 }

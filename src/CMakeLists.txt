@@ -14,6 +14,7 @@ add_executable(stoc main.cpp
         CodeGeneration/CodeGeneration.cpp
         SemanticAnalysis/Semantic.cpp
         SemanticAnalysis/Symbol.cpp
-        SemanticAnalysis/SymbolTable.cpp)
+        SemanticAnalysis/SymbolTable.cpp
+        SemanticAnalysis/Type.cpp)
 
 
