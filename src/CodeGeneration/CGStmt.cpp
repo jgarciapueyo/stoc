@@ -128,7 +128,11 @@ void CodeGeneration::generate(const std::shared_ptr<ForStmt> &node) {
   function->getBasicBlockList().push_back(bodyBB);
   builder->SetInsertPoint(bodyBB);
   generate(node->getBody());
-  builder->CreateBr(postBB);
+  // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
+  // branch to the continuation of the ifStmt is added
+  if(!bodyBB->getTerminator()) {
+    builder->CreateBr(postBB);
+  }
 
   // Code Generation for the post of the forstmt
   function->getBasicBlockList().push_back(postBB);
@@ -161,7 +165,11 @@ void CodeGeneration::generate(const std::shared_ptr<WhileStmt> &node) {
   function->getBasicBlockList().push_back(bodyBB);
   builder->SetInsertPoint(bodyBB);
   generate(node->getBody());
-  builder->CreateBr(conditionBB);
+  // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
+  // branch to the continuation of the ifStmt is added
+  if(!bodyBB->getTerminator()) {
+    builder->CreateBr(conditionBB);
+  }
 
   // Code Generation for the continuation of the while stmt
   function->getBasicBlockList().push_back(continuationBB);

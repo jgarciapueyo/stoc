@@ -22,6 +22,7 @@ include_directories(include)
 
 # Executable code is here
 add_subdirectory(src)
+add_subdirectory(utils/llvm-bitcode-examples)
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
@@ -37,3 +38,4 @@ llvm_map_components_to_libnames(llvm_libs
 # Link against LLVM libraries
 target_link_libraries(stoc ${llvm_libs})
 target_link_libraries(stoc cxxopts)
+target_link_libraries(tutorial_llvm ${llvm_libs})

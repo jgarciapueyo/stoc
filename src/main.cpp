@@ -18,10 +18,12 @@ void initOptions(cxxopts::Options &options) {
       ("h,help", "Print help information")
       ("i,input", "Path to source code to compile", cxxopts::value<std::string>())
       ("o,output", "Output file", cxxopts::value<std::string>()->default_value("a.out"))
-      ("s,scanning", "Show tokens after scannning",
+      ("tokens-dump", "Show tokens after scannning",
         cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
       ("ast-dump", "Show AST after parsing",
-      cxxopts::value<bool>()->default_value("false")->implicit_value("true"));
+      cxxopts::value<bool>()->default_value("false")->implicit_value("true"))
+      ("emit-llvm", "Show LLVM IR generated",
+          cxxopts::value<bool>()->default_value("false")->implicit_value("true"));
 
   options.parse_positional({"input", "output"});
 }
@@ -45,6 +47,9 @@ int main(int argc, char *argv[]) {
     // Read file
     std::string path = opt["input"].as<std::string>();
     auto src = std::make_shared<SrcFile>(path);
+    // If some option of the compiler is activated like printing tokens, the AST or the LLVM IR, we
+    // assume that the user does not want the executable
+    bool wantsExecutable = true;
 
     // Scan file (lexing)
     Scanner scanner(src);
@@ -54,8 +59,9 @@ int main(int argc, char *argv[]) {
       return 1;
     }
 
-    if (opt["scanning"].as<bool>()) {
+    if (opt["tokens-dump"].as<bool>()) {
       scanner.printTokens();
+      wantsExecutable = false;
     }
 
     // Parse file (parsing)
@@ -75,18 +81,29 @@ int main(int argc, char *argv[]) {
     }
 
     if (opt["ast-dump"].as<bool>()) {
-      // TODO: remove and call from print()
       ASTPrinter printer;
       for (const auto &node : src->getAst()) {
         printer.print(node);
       }
+      wantsExecutable = false;
     }
 
     // Code Generation
     CodeGeneration codegen(src);
     codegen.generate();
 
-    // LLVM IR to executable
+    if(opt["emit-llvm"].as<bool>()) {
+      codegen.printLLVM();
+      wantsExecutable = false;
+    }
+
+    if(src->isErrorInCodeGeneration()) {
+        return 1;
+    }
+
+    if(wantsExecutable) {
+      codegen.getExecutable();
+    }
 
   } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;

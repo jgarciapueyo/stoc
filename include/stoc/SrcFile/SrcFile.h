@@ -48,6 +48,8 @@ public:
                                 /// variable before it has been defined, ...)
 
   // Fields for the code generation phase
+  bool errorInCodeGeneration;
+
   // LLVM specific structures to store the LLVM IR generated in the Code Generation phase
   std::shared_ptr<llvm::LLVMContext> context;
   std::shared_ptr<llvm::Module> module;
@@ -74,6 +76,8 @@ public:
   void setErrorInParsing(bool error);
   [[nodiscard]] bool isErrorInSemanticAnalysis() const;
   void setErrorInSemanticAnalysis(bool errorInSemanticAnalysis);
+  bool isErrorInCodeGeneration() const;
+  void setErrorInCodeGeneration(bool errorInCodeGeneration);
   [[nodiscard]] const std::shared_ptr<llvm::LLVMContext> &getContext() const;
   void setContext(const std::shared_ptr<llvm::LLVMContext> &context);
   [[nodiscard]] const std::shared_ptr<llvm::Module> &getModule() const;

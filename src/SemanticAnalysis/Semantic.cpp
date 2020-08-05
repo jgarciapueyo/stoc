@@ -5,6 +5,7 @@
 #include "stoc/AST/Decl.h"
 #include "stoc/AST/Expr.h"
 #include "stoc/AST/Stmt.h"
+#include "stoc/SemanticAnalysis/Mangler.h"
 #include "stoc/SemanticAnalysis/Type.h"
 
 #include <unordered_map>
@@ -12,11 +13,20 @@
 Semantic::Semantic(std::shared_ptr<SrcFile> file)
     : file(file), scopeLevel(0), scopeType(ScopeType::NONE) {
   this->symbolTable = std::make_shared<SymbolTable>(0);
+
+  returnStatementInBlockStmt = false;
+  declareBuiltinFunctions();
 }
 
 void Semantic::analyse() {
   for (const auto &declaration : file->getAst()) {
     declaration->accept(this);
+  }
+
+  // Check in the end that there is at least one main function
+  std::vector<Symbol> symbols = symbolTable->lookup("main");
+  if (symbols.empty()) {
+    reportError("missing main function");
   }
 }
 
@@ -27,9 +37,15 @@ void Semantic::analyse(const std::shared_ptr<Stmt> &stmt) { stmt->accept(this); 
 void Semantic::analyse(const std::shared_ptr<Decl> &decl) { decl->accept(this); }
 
 void Semantic::analyse(const std::vector<std::shared_ptr<Stmt>> &stmts) {
+  bool previousReturnStatementInBlockStmt = returnStatementInBlockStmt;
+  returnStatementInBlockStmt = false;
   for (const auto &stmt : stmts) {
+    if (returnStatementInBlockStmt) {
+      reportError("Statement after return statement");
+    }
     analyse(stmt);
   }
+  returnStatementInBlockStmt = previousReturnStatementInBlockStmt;
 }
 
 void Semantic::beginScope() {
@@ -47,6 +63,13 @@ void Semantic::endScope() {
 void Semantic::reportError(std::string error_msg, int line, int column) {
   std::cerr << "<" << this->file->getFilename() << ":l" << line << ":c" << column
             << "> Semantic analysis error: " << error_msg << std::endl;
+
+  this->file->setErrorInSemanticAnalysis(true);
+}
+
+void Semantic::reportError(std::string error_msg) {
+  std::cerr << "<" << this->file->getFilename() << "> Semantic analysis error: " << error_msg
+            << std::endl;
 
   this->file->setErrorInSemanticAnalysis(true);
 }
@@ -134,18 +157,12 @@ std::pair<bool, std::shared_ptr<Type>>
 Semantic::isValidBinaryOperatorForType(const Token &op, std::shared_ptr<Type> typeOperands) {
   static std::unordered_map<TokenType, std::vector<std::function<bool(std::shared_ptr<Type>)>>>
       binaryOp = {
-          {ADD, {[](std::shared_ptr<Type> t) { return isNumeric(t) || isString(t); }}},
-          {SUB, {isNumeric}},
-          {STAR, {isNumeric}},
-          {SLASH, {isNumeric}},
-          {EQUAL, {isComparable}},
-          {NOT_EQUAL, {isComparable}},
-          {LESS, {isOrdered}},
-          {GREATER, {isOrdered}},
-          {LESS_EQUAL, {isOrdered}},
-          {GREATER_EQUAL, {isOrdered}},
-          {LAND, {isBoolean}},
-          {LOR, {isBoolean}},
+          // I was not able to implement concatenation with strings in code generation
+          //{ADD, {[](std::shared_ptr<Type> t) { return isNumeric(t) || isString(t); }}},
+          {ADD, {isNumeric}},           {SUB, {isNumeric}},      {STAR, {isNumeric}},
+          {SLASH, {isNumeric}},         {EQUAL, {isComparable}}, {NOT_EQUAL, {isComparable}},
+          {LESS, {isOrdered}},          {GREATER, {isOrdered}},  {LESS_EQUAL, {isOrdered}},
+          {GREATER_EQUAL, {isOrdered}}, {LAND, {isBoolean}},     {LOR, {isBoolean}},
       };
 
   auto requirements = binaryOp.find(op.tokenType);
@@ -167,6 +184,51 @@ Semantic::isValidUnaryOperatorForType(const Token &op, std::shared_ptr<Type> typ
   } else {
     return {false, nullptr};
   }
+}
+
+void Semantic::declareBuiltinFunctions() {
+  auto type_void = BasicType::getVoidType();
+  // print function for basic types
+  std::vector<std::shared_ptr<BasicType>> params_print_int{BasicType::getIntType()};
+  auto type_print_int = std::make_shared<FunctionType>(params_print_int, type_void);
+  Symbol symbol_print_int("print", Symbol::Kind::FUNCTION, type_print_int);
+  symbolTable->insert("print", symbol_print_int);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_float{BasicType::getFloatType()};
+  auto type_print_float = std::make_shared<FunctionType>(params_print_float, type_void);
+  Symbol symbol_print_float("print", Symbol::Kind::FUNCTION, type_print_float);
+  symbolTable->insert("print", symbol_print_float);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_bool{BasicType::getBoolType()};
+  auto type_print_bool = std::make_shared<FunctionType>(params_print_bool, type_void);
+  Symbol symbol_print_bool("print", Symbol::Kind::FUNCTION, type_print_bool);
+  symbolTable->insert("print", symbol_print_bool);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_string{BasicType::getStringType()};
+  auto type_print_string = std::make_shared<FunctionType>(params_print_string, type_void);
+  Symbol symbol_print_string("print", Symbol::Kind::FUNCTION, type_print_string);
+  symbolTable->insert("print", symbol_print_string);
+
+  // println function for basic types
+  std::vector<std::shared_ptr<BasicType>> params_println_int{BasicType::getIntType()};
+  auto type_println_int = std::make_shared<FunctionType>(params_println_int, type_void);
+  Symbol symbol_println_int("println", Symbol::Kind::FUNCTION, type_println_int);
+  symbolTable->insert("println", symbol_println_int);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_float{BasicType::getFloatType()};
+  auto type_println_float = std::make_shared<FunctionType>(params_println_float, type_void);
+  Symbol symbol_println_float("println", Symbol::Kind::FUNCTION, type_println_float);
+  symbolTable->insert("println", symbol_println_float);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_bool{BasicType::getBoolType()};
+  auto type_println_bool = std::make_shared<FunctionType>(params_println_bool, type_void);
+  Symbol symbol_println_bool("println", Symbol::Kind::FUNCTION, type_println_bool);
+  symbolTable->insert("println", symbol_println_bool);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_string{BasicType::getStringType()};
+  auto type_println_string = std::make_shared<FunctionType>(params_println_string, type_void);
+  Symbol symbol_println_string("println", Symbol::Kind::FUNCTION, type_println_string);
+  symbolTable->insert("println", symbol_println_string);
 }
 
 std::shared_ptr<Type> Semantic::tokenTypeToType(Token token) {
@@ -292,6 +354,7 @@ void Semantic::visit(std::shared_ptr<FuncDecl> node) {
   } catch (std::runtime_error &e) {
     reportError(e.what(), node->getIdentifierToken().line, node->getIdentifierToken().column);
   }
+  node->setType(signature);
 
   // Analyse parameters and body of the function
   beginScope();
@@ -308,6 +371,9 @@ void Semantic::visit(std::shared_ptr<FuncDecl> node) {
 
   // Restore previous values
   scopeType = prevScopeType;
+
+  // Mangle the identifier of the function
+  node->setIdentifierMangled(mangler::mangle(node->getIdentifierToken().value, signature));
 }
 
 void Semantic::visit(std::shared_ptr<DeclarationStmt> node) { analyse(node->getDecl()); }
@@ -316,7 +382,18 @@ void Semantic::visit(std::shared_ptr<ExpressionStmt> node) { analyse(node->getEx
 
 void Semantic::visit(std::shared_ptr<BlockStmt> node) {
   beginScope();
-  analyse(node->getStmts());
+
+  bool previousReturnStatementInBlockStmt = returnStatementInBlockStmt;
+  returnStatementInBlockStmt = false;
+  for (const auto &stmt : node->getStmts()) {
+    if (returnStatementInBlockStmt) {
+      reportError("In this block, there is a statement after return statement",
+                  node->getLbrace().line, node->getRbrace().column);
+    }
+    analyse(stmt);
+  }
+  returnStatementInBlockStmt = previousReturnStatementInBlockStmt;
+
   endScope();
 }
 
@@ -415,6 +492,8 @@ void Semantic::visit(std::shared_ptr<ReturnStmt> node) {
                       " and function return value of type " + this->signature->getName(),
                   node->getReturnKeyword().line, node->getReturnKeyword().column);
     }
+
+    returnStatementInBlockStmt = true;
   }
 }
 

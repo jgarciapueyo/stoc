@@ -15,6 +15,7 @@ add_executable(stoc main.cpp
         SemanticAnalysis/Semantic.cpp
         SemanticAnalysis/Symbol.cpp
         SemanticAnalysis/SymbolTable.cpp
-        SemanticAnalysis/Type.cpp)
+        SemanticAnalysis/Type.cpp
+        SemanticAnalysis/Mangler.cpp)
 
 

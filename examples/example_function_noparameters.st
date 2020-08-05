@@ -5,6 +5,6 @@ func f() int {
 }
 
 func main() int {
-  f();
+  println(f());
   return 0;
 }

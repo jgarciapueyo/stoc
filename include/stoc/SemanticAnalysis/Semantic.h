@@ -40,7 +40,12 @@ private:
   // Use in call expression or other nodes that need information about most recent resolved symbol
   std::vector<Symbol> resolvedSymbols;
 
+  // Use for semantic analysis that return is last instruction in statement block
+  bool returnStatementInBlockStmt;
+
   // WRAPPER METHODS for ASTVisitor methods
+  void declareBuiltinFunctions();
+
   void analyse(const std::shared_ptr<Decl> &decl);
   void analyse(const std::shared_ptr<Expr> &expr);
   void analyse(const std::shared_ptr<Stmt> &stmt);
@@ -64,6 +69,7 @@ private:
   std::shared_ptr<FunctionType> createSignature(std::shared_ptr<FuncDecl> node);
 
   void reportError(std::string error_msg, int line, int column);
+  void reportError(std::string error_msg);
 
 public:
   explicit Semantic(std::shared_ptr<SrcFile> file);

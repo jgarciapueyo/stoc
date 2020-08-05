@@ -35,6 +35,7 @@ SrcFile::SrcFile(std::string &path) {
     this->context = nullptr;
     this->module = nullptr;
     this->builder = nullptr;
+    this->errorInCodeGeneration = false;
   } else {
     ifs.close();
     throw std::runtime_error("Failed to open source file " + path);
@@ -60,6 +61,10 @@ bool SrcFile::isErrorInSemanticAnalysis() const { return errorInSemanticAnalysis
 void SrcFile::setErrorInSemanticAnalysis(bool errorInSemanticAnalysis) {
   this->errorInSemanticAnalysis = errorInSemanticAnalysis;
 }
+bool SrcFile::isErrorInCodeGeneration() const { return errorInCodeGeneration; }
+void SrcFile::setErrorInCodeGeneration(bool errorInCodeGeneration) {
+  SrcFile::errorInCodeGeneration = errorInCodeGeneration;
+}
 const std::shared_ptr<llvm::LLVMContext> &SrcFile::getContext() const { return context; }
 void SrcFile::setContext(const std::shared_ptr<llvm::LLVMContext> &context) {
   this->context = context;
@@ -70,3 +75,4 @@ const std::shared_ptr<llvm::IRBuilder<>> &SrcFile::getBuilder() const { return b
 void SrcFile::setBuilder(const std::shared_ptr<llvm::IRBuilder<>> &builder) {
   this->builder = builder;
 }
+

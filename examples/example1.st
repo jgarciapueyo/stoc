@@ -7,6 +7,8 @@ func factorial(var int n) int {
 }
 
 func main() {
-  var int i = 1;
+  var int i = 10;
   var int res = factorial(i);
+  println("Result is: ");
+  println(res);
 }

@@ -16,7 +16,7 @@ Decl::Kind Decl::getDeclKind() const { return declKind; }
 VarDecl::VarDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
                  std::shared_ptr<Expr> value)
     : varKeywordToken(varKeywordToken), typeToken(typeToken), identifierToken(identifierToken),
-      value(value), Decl(Decl::Kind::VARDECL) {}
+      value(value), identifierMangled(identifierToken.value), Decl(Decl::Kind::VARDECL) {}
 
 void VarDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<VarDecl>(Decl::shared_from_this()));
@@ -39,7 +39,7 @@ void VarDecl::setIdentifierMangled(const std::string &identifierMangled) {
 ConstDecl::ConstDecl(Token constKeywordToken, Token typeToken, Token identifierToken,
                      std::shared_ptr<Expr> value)
     : constKeywordToken(constKeywordToken), identifierToken(identifierToken), typeToken(typeToken),
-      value(value), Decl(Decl::Kind::CONSTDECL) {}
+      value(value), identifierMangled(identifierToken.value), Decl(Decl::Kind::CONSTDECL) {}
 
 void ConstDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<ConstDecl>(Decl::shared_from_this()));
@@ -61,7 +61,7 @@ void ConstDecl::setIdentifierMangled(const std::string &identifierMangled) {
 // Parameter Declaration node
 ParamDecl::ParamDecl(Token keywordToken, Token typeToken, Token identifierToken)
     : keywordToken(keywordToken), typeToken(typeToken), identifierToken(identifierToken),
-      Decl(Decl::Kind::PARAMDECL) {}
+      identifierMangled(identifierToken.value), Decl(Decl::Kind::PARAMDECL) {}
 
 void ParamDecl::accept(ASTVisitor *visitor) {
   visitor->visit(std::dynamic_pointer_cast<ParamDecl>(Decl::shared_from_this()));
@@ -83,7 +83,7 @@ FuncDecl::FuncDecl(Token funcKeywordToken, Token identifierToken,
                    std::shared_ptr<BlockStmt> body)
     : funcKeywordToken(funcKeywordToken), identifierToken(identifierToken), params(params),
       returnTypeToken(returnTypeToken), body(body), hasReturnType(true),
-      Decl(Decl::Kind::FUNCDECL) {}
+      identifierMangled(identifierToken.value), Decl(Decl::Kind::FUNCDECL) {}
 
 FuncDecl::FuncDecl(Token funcKeywordToken, Token identifierToken,
                    std::vector<std::shared_ptr<ParamDecl>> params, std::shared_ptr<BlockStmt> body)

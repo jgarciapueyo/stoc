@@ -31,7 +31,9 @@ public:
   Symbol() = default;
 
   /// Constructor for variables, constant and parameters
-  Symbol(std::string identifier, Symbol::Kind kind, std::shared_ptr<Type> type, std::shared_ptr<Decl> declReference);
+  Symbol(std::string identifier, Symbol::Kind kind, std::shared_ptr<Type> type,
+         std::shared_ptr<Decl> declReference);
+  Symbol(std::string identifier, Symbol::Kind kind, std::shared_ptr<Type> type);
 
   // Getters
   [[nodiscard]] const std::string &getIdentifier() const;

@@ -17,6 +17,8 @@ func gcd(var int n, var int m) int {
 }
 
 func main() int {
-  var int GCD = gcd(12, 10);
+  var int GCD = gcd(13, 10);
+  println("Result is:");
+  println(GCD);
   return 0;
 }
