@@ -1,3 +1,12 @@
+//===- src/SemanticAnalysis/Type.cpp - Implementation of the Type class -------------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the Type class used in Semantic Analysis for type
+// checking and in the symbols.
+//
+//===------------------------------------------------------------------------------------------===//
+
 #include "stoc/SemanticAnalysis/Type.h"
 
 // ---- Type ----
@@ -8,9 +17,11 @@ bool typeIsEqual(const std::shared_ptr<Type> lhs, const std::shared_ptr<Type> rh
   if (lhs->typeKind == rhs->typeKind) {
     switch (lhs->typeKind) {
     case Type::Kind::BasicType:
-      return typeIsEqual(std::dynamic_pointer_cast<BasicType>(lhs), std::dynamic_pointer_cast<BasicType>(rhs));
+      return typeIsEqual(std::dynamic_pointer_cast<BasicType>(lhs),
+                         std::dynamic_pointer_cast<BasicType>(rhs));
     case Type::Kind::Signature:
-      return typeIsEqual(std::dynamic_pointer_cast<FunctionType>(lhs), std::dynamic_pointer_cast<FunctionType>(rhs));
+      return typeIsEqual(std::dynamic_pointer_cast<FunctionType>(lhs),
+                         std::dynamic_pointer_cast<FunctionType>(rhs));
     default:
       return false;
     }
@@ -19,7 +30,7 @@ bool typeIsEqual(const std::shared_ptr<Type> lhs, const std::shared_ptr<Type> rh
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Type>& type) {
+std::ostream &operator<<(std::ostream &os, const std::shared_ptr<Type> &type) {
   os << type->getName();
   return os;
 }
@@ -68,16 +79,16 @@ bool typeIsEqual(std::shared_ptr<BasicType> lhs, std::shared_ptr<BasicType> rhs)
 
 // ---- Signature (for functions) ----
 FunctionType::FunctionType(std::vector<std::shared_ptr<BasicType>> params,
-                     std::shared_ptr<BasicType> result)
+                           std::shared_ptr<BasicType> result)
     : Type(Type::Kind::Signature), params(params), result(result) {}
 
 std::vector<std::shared_ptr<BasicType>> FunctionType::getParams() { return params; }
 std::shared_ptr<BasicType> FunctionType::getResult() { return result; }
 std::string FunctionType::getName() {
   std::string name = "(";
-  for(int i = 0; i < params.size(); ++i) {
+  for (int i = 0; i < params.size(); ++i) {
     name += params[i]->getName();
-    if(i != params.size() - 1) {
+    if (i != params.size() - 1) {
       name += ",";
     }
   }
@@ -87,14 +98,16 @@ std::string FunctionType::getName() {
 }
 
 bool FunctionType::isInvalid() {
-  for(const auto &param : params) {
-    if(param->isInvalid()) return true;
+  for (const auto &param : params) {
+    if (param->isInvalid())
+      return true;
   }
 
   return result->isInvalid();
 }
 
-bool areParametersEqual(std::vector<std::shared_ptr<BasicType>> lhs, std::vector<std::shared_ptr<BasicType>> rhs) {
+bool areParametersEqual(std::vector<std::shared_ptr<BasicType>> lhs,
+                        std::vector<std::shared_ptr<BasicType>> rhs) {
   // check arity of parameters
   if (lhs.size() != rhs.size()) {
     return false;
@@ -111,5 +124,6 @@ bool areParametersEqual(std::vector<std::shared_ptr<BasicType>> lhs, std::vector
 }
 
 bool typeIsEqual(std::shared_ptr<FunctionType> lhs, std::shared_ptr<FunctionType> rhs) {
-  return areParametersEqual(lhs->getParams(), rhs->getParams()) && typeIsEqual(lhs->result, rhs->result);
+  return areParametersEqual(lhs->getParams(), rhs->getParams()) &&
+         typeIsEqual(lhs->result, rhs->result);
 }

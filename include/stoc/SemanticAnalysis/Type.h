@@ -1,3 +1,12 @@
+//===- stoc/SemanticAnalysis/Type.h - Defintion of Type class --*- C++ -*-===//
+//
+//===---------------------------------------------------------------------===//
+//
+// This file defines the Type class used in Semantic Analysis for type
+// checking and in the symbols.
+//
+//===--------------------------------------------------------------------===//
+
 #ifndef STOC_TYPE_H
 #define STOC_TYPE_H
 
@@ -5,6 +14,7 @@
 #include <string>
 #include <vector>
 
+/// Represents a data Type
 class Type {
 public:
   enum class Kind { BasicType, Signature };
@@ -23,6 +33,7 @@ public:
   friend std::ostream &operator<<(std::ostream &os, const std::shared_ptr<Type> &type);
 };
 
+/// Represents a basic data type that exists in Stoc
 class BasicType : public Type {
 public:
   enum class Kind {
@@ -64,6 +75,7 @@ public:
   friend bool typeIsEqual(std::shared_ptr<BasicType> lhs, std::shared_ptr<BasicType> rhs);
 };
 
+/// Represents a function type, composed of the types of the parameters and the return type.
 class FunctionType : public Type {
 private:
   // for now, all the parameters have to be of basic type because there are not other types
@@ -79,8 +91,11 @@ public:
   std::string getName() override;
   bool isInvalid() override;
 
+  /// compares the number and types of the parameters
   friend bool areParametersEqual(std::vector<std::shared_ptr<BasicType>> lhs,
                                  std::vector<std::shared_ptr<BasicType>> rhs);
+  /// compares function types, which includes number and tyeps of the parameters, and the return
+  /// type
   friend bool typeIsEqual(std::shared_ptr<FunctionType> lhs, std::shared_ptr<FunctionType> rhs);
 };
 

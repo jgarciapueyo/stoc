@@ -79,7 +79,7 @@ enum TokenType {
 std::string to_string(TokenType type);
 std::ostream &operator<<(std::ostream &os, TokenType type);
 
-/// Representation of the precedence of TokenTypes
+/// Representation of the precedence of TokenTypes (used in Pratt Parser for expressions)
 /// e.g. A FACTOR (*, /) binds tighter than a TERM(+,/) so it has higher precedence
 /// Important: all equality and comparison have the same precedence (different from C precedence).
 ///            This implies that parenthesis is mandatory to indicate the precedence correctly.
@@ -104,9 +104,8 @@ public:
 
   Token(TokenType type, int begin, int line, int column);
 
-  Token();
+  Token() = default;
 
-public:
   TokenType tokenType;
 
   /// position where the token starts in the raw source code

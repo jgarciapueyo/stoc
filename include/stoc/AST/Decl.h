@@ -55,7 +55,8 @@ private:
   bool isGlobalVariable;
 
   std::shared_ptr<Type> type;
-  std::string identifierMangled;
+  std::string identifierMangled; // mangling is changing identifier from the program source to
+                                 // custom identifier used inside compiler (not used)
 
 public:
   VarDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
@@ -91,7 +92,8 @@ private:
   bool isGlobalConstant;
 
   std::shared_ptr<Type> type;
-  std::string identifierMangled;
+  std::string identifierMangled; // mangling is changing identifier from the program source to
+                                 // custom identifier used inside compiler (not used)
 
 public:
   ConstDecl(Token varKeywordToken, Token typeToken, Token identifierToken,
@@ -123,7 +125,8 @@ private:
   Token identifierToken;
 
   std::shared_ptr<Type> type;
-  std::string identifierMangled;
+  std::string identifierMangled; // mangling is changing identifier from the program source to
+                                 // custom identifier used inside compiler (not used)
 
 public:
   ParamDecl(Token keywordToken, Token typeToken, Token identifierToken);
@@ -156,7 +159,9 @@ private:
   std::shared_ptr<BlockStmt> body;
 
   std::shared_ptr<Type> type;
-  std::string identifierMangled;
+  std::string identifierMangled; // mangling is changing identifier from the program source to
+                                 // custom identifier used inside compiler. Used to allow for
+                                 // function overloading.
 
 public:
   FuncDecl(Token funcKeywordToken, Token identifierToken,

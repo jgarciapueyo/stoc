@@ -264,8 +264,6 @@ std::shared_ptr<Expr> Parser::parseUnaryExpr() {
   default:
     return parsePrimaryExpr();
   }
-
-
 }
 
 std::shared_ptr<Expr> Parser::parsePrimaryExpr() {

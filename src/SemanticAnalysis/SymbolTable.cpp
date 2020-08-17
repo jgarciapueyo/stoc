@@ -1,4 +1,12 @@
-// TODO: add header of the file
+//===- src/SemanticAnalysis/SymbolTable.cpp - Implementation of SymbolTable class --*- C++ -*-===//
+//
+//===-----------------------------------------------------------------------------------------===//
+//
+// This file implements the SymbolTable class used in to store information about declarations
+// (variables, constants and functions) and the usage of the identifiers later in the source
+// program.
+//
+//===-----------------------------------------------------------------------------------------===//
 #include "stoc/SemanticAnalysis/SymbolTable.h"
 #include "stoc/SemanticAnalysis/Type.h"
 
@@ -24,6 +32,7 @@ std::vector<Symbol> SymbolTable::lookup(std::string identifier) {
 }
 
 void SymbolTable::insertFunction(std::string identifier, Symbol symbol) {
+  // functions are mangled, so more than one function can exist with the same identifier
   auto it = table.find(identifier);
   if (it == this->table.end()) { // it has not been found in current scope we can insert it
     table.insert({identifier, {symbol}});
@@ -52,6 +61,8 @@ void SymbolTable::insertFunction(std::string identifier, Symbol symbol) {
 }
 
 void SymbolTable::insertVariable(std::string identifier, Symbol symbol) {
+  // variables, constants and parameters are not mangled, so only one variable with the same
+  // identifier can exist
   auto it = table.find(identifier);
   if (it == this->table.end()) { // it has not been found in current scope we can insert it
     table.insert({identifier, {symbol}});

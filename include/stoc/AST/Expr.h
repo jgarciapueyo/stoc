@@ -34,9 +34,9 @@ public:
   enum class Kind { BINARYEXPR, UNARYEXPR, LITERALEXPR, IDENTEXPR, CALLEXPR };
 
   enum class ValueKind {
-    Mod_LVal, // Modifiable LValue: locator value (object that occupies memory) and can be modified
+    Mod_LVal,  // Modifiable LValue: locator value (object that occupies memory) and can be modified
     NMod_LVal, // NonModifiable LValue: locator value and can not be modified (i.e. constant)
-    RVal // RValue: what is not an LValue (usually literals like 4, true, ...)
+    RVal       // RValue: what is not an LValue (usually literals like 4, true, ...)
   };
 
 protected:

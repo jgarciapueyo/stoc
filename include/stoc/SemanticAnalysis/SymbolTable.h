@@ -1,13 +1,21 @@
-// TODO: add header of the file
+//===- stoc/SemanticAnalysis/SymbolTable.h - Defintion of SymbolTable class --------*- C++ -*-===//
+//
+//===-----------------------------------------------------------------------------------------===//
+//
+// This file defines the SymbolTable class used in to store information about declarations
+// (variables, constants and functions) and the usage of the identifiers later in the source
+// program.
+//
+//===-----------------------------------------------------------------------------------------===//
 #ifndef STOC_SYMBOLTABLE_H
 #define STOC_SYMBOLTABLE_H
-
-#include "stoc/SemanticAnalysis/Symbol.h"
-#include "stoc/Scanner/Token.h"
 
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+#include "stoc/Scanner/Token.h"
+#include "stoc/SemanticAnalysis/Symbol.h"
 
 /// Structure used to store information associated to the symbols declared in the program
 /// <identifier, [information]>
@@ -46,7 +54,5 @@ public:
   ///  If there is already a \symbol associated with \identifier in the current scope/SymbolTable
   ///  it raises an exception.
   void insert(std::string identifier, Symbol symbol);
-
-  // delete (but why, for deleting only necessary to go to a symbol table with more level
 };
 #endif // STOC_SYMBOLTABLE_H

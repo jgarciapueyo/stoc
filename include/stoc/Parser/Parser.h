@@ -11,6 +11,9 @@
 #ifndef STOC_PARSER_H
 #define STOC_PARSER_H
 
+#include <memory>
+#include <vector>
+
 #include "stoc/AST/BasicNode.h"
 #include "stoc/AST/Decl.h"
 #include "stoc/AST/Expr.h"
@@ -18,13 +21,10 @@
 #include "stoc/Scanner/Token.h"
 #include "stoc/SrcFile/SrcFile.h"
 
-#include <memory>
-#include <vector>
-
 /// A Parser takes a list of tokens and parses it into an AST
 class Parser {
 private:
-  std::shared_ptr<SrcFile> file;               /// stoc source file and list of tokens
+  std::shared_ptr<SrcFile> file; /// stoc source file and list of tokens
 
   /// abstract syntax tree composed of a list of top-level declarations
   std::vector<std::shared_ptr<Decl>> ast;
@@ -139,7 +139,7 @@ private:
   std::shared_ptr<Expr> parsePrimaryExpr();
 
 public:
-  Parser(const std::shared_ptr<SrcFile> &file);
+  explicit Parser(const std::shared_ptr<SrcFile> &file);
 
   /// main method: parses the list of tokens (in \file) and transforms it into an AST
   ///  (the AST is stored in SrcFile \file)

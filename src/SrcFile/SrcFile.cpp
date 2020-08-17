@@ -75,4 +75,3 @@ const std::shared_ptr<llvm::IRBuilder<>> &SrcFile::getBuilder() const { return b
 void SrcFile::setBuilder(const std::shared_ptr<llvm::IRBuilder<>> &builder) {
   this->builder = builder;
 }
-

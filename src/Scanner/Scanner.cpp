@@ -223,8 +223,9 @@ void Scanner::scanString() {
   if (isAtEnd()) {
     tokens.push_back(makeErrorToken("missing \" character for defining strings"));
   } else {
-    advance(); // advance to process ending quotes
+    this->start++; // advance start not to add initial quotes
     tokens.push_back(makeToken(LIT_STRING));
+    advance(); // advance to process ending quotes
   }
 }
 

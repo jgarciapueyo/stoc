@@ -1,14 +1,24 @@
-// TODO: add header of the file
-// TODO: semantic analysis has to transform AST to a better suited AST for code Generation
+//===- src/SemanticAnalysis/Semantic.cpp - Implementation of Semantic class ---------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the Semantic class.
+// Semantic Analysis is the third phase of a compiler and computes additional information after the
+// syntactic structure of the program is known. t is called semantic analysisbecause the information
+// goes beyond what a context-free grammar can express andit is closer related with the meaning of
+// the program. In a statically typed languagelike Stoc, semantic analysis consists on building a
+// symbol table to connect variables definition and their use, and also doing type checking.
+//
+//===------------------------------------------------------------------------------------------===//
 #include "stoc/SemanticAnalysis/Semantic.h"
+
+#include <unordered_map>
 
 #include "stoc/AST/Decl.h"
 #include "stoc/AST/Expr.h"
 #include "stoc/AST/Stmt.h"
 #include "stoc/SemanticAnalysis/Mangler.h"
 #include "stoc/SemanticAnalysis/Type.h"
-
-#include <unordered_map>
 
 Semantic::Semantic(std::shared_ptr<SrcFile> file)
     : file(file), scopeLevel(0), scopeType(ScopeType::NONE) {
@@ -46,6 +56,51 @@ void Semantic::analyse(const std::vector<std::shared_ptr<Stmt>> &stmts) {
     analyse(stmt);
   }
   returnStatementInBlockStmt = previousReturnStatementInBlockStmt;
+}
+
+void Semantic::declareBuiltinFunctions() {
+  auto type_void = BasicType::getVoidType();
+  // print function for basic types
+  std::vector<std::shared_ptr<BasicType>> params_print_int{BasicType::getIntType()};
+  auto type_print_int = std::make_shared<FunctionType>(params_print_int, type_void);
+  Symbol symbol_print_int("print", Symbol::Kind::FUNCTION, type_print_int);
+  symbolTable->insert("print", symbol_print_int);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_float{BasicType::getFloatType()};
+  auto type_print_float = std::make_shared<FunctionType>(params_print_float, type_void);
+  Symbol symbol_print_float("print", Symbol::Kind::FUNCTION, type_print_float);
+  symbolTable->insert("print", symbol_print_float);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_bool{BasicType::getBoolType()};
+  auto type_print_bool = std::make_shared<FunctionType>(params_print_bool, type_void);
+  Symbol symbol_print_bool("print", Symbol::Kind::FUNCTION, type_print_bool);
+  symbolTable->insert("print", symbol_print_bool);
+
+  std::vector<std::shared_ptr<BasicType>> params_print_string{BasicType::getStringType()};
+  auto type_print_string = std::make_shared<FunctionType>(params_print_string, type_void);
+  Symbol symbol_print_string("print", Symbol::Kind::FUNCTION, type_print_string);
+  symbolTable->insert("print", symbol_print_string);
+
+  // println function for basic types
+  std::vector<std::shared_ptr<BasicType>> params_println_int{BasicType::getIntType()};
+  auto type_println_int = std::make_shared<FunctionType>(params_println_int, type_void);
+  Symbol symbol_println_int("println", Symbol::Kind::FUNCTION, type_println_int);
+  symbolTable->insert("println", symbol_println_int);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_float{BasicType::getFloatType()};
+  auto type_println_float = std::make_shared<FunctionType>(params_println_float, type_void);
+  Symbol symbol_println_float("println", Symbol::Kind::FUNCTION, type_println_float);
+  symbolTable->insert("println", symbol_println_float);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_bool{BasicType::getBoolType()};
+  auto type_println_bool = std::make_shared<FunctionType>(params_println_bool, type_void);
+  Symbol symbol_println_bool("println", Symbol::Kind::FUNCTION, type_println_bool);
+  symbolTable->insert("println", symbol_println_bool);
+
+  std::vector<std::shared_ptr<BasicType>> params_println_string{BasicType::getStringType()};
+  auto type_println_string = std::make_shared<FunctionType>(params_println_string, type_void);
+  Symbol symbol_println_string("println", Symbol::Kind::FUNCTION, type_println_string);
+  symbolTable->insert("println", symbol_println_string);
 }
 
 void Semantic::beginScope() {
@@ -184,51 +239,6 @@ Semantic::isValidUnaryOperatorForType(const Token &op, std::shared_ptr<Type> typ
   } else {
     return {false, nullptr};
   }
-}
-
-void Semantic::declareBuiltinFunctions() {
-  auto type_void = BasicType::getVoidType();
-  // print function for basic types
-  std::vector<std::shared_ptr<BasicType>> params_print_int{BasicType::getIntType()};
-  auto type_print_int = std::make_shared<FunctionType>(params_print_int, type_void);
-  Symbol symbol_print_int("print", Symbol::Kind::FUNCTION, type_print_int);
-  symbolTable->insert("print", symbol_print_int);
-
-  std::vector<std::shared_ptr<BasicType>> params_print_float{BasicType::getFloatType()};
-  auto type_print_float = std::make_shared<FunctionType>(params_print_float, type_void);
-  Symbol symbol_print_float("print", Symbol::Kind::FUNCTION, type_print_float);
-  symbolTable->insert("print", symbol_print_float);
-
-  std::vector<std::shared_ptr<BasicType>> params_print_bool{BasicType::getBoolType()};
-  auto type_print_bool = std::make_shared<FunctionType>(params_print_bool, type_void);
-  Symbol symbol_print_bool("print", Symbol::Kind::FUNCTION, type_print_bool);
-  symbolTable->insert("print", symbol_print_bool);
-
-  std::vector<std::shared_ptr<BasicType>> params_print_string{BasicType::getStringType()};
-  auto type_print_string = std::make_shared<FunctionType>(params_print_string, type_void);
-  Symbol symbol_print_string("print", Symbol::Kind::FUNCTION, type_print_string);
-  symbolTable->insert("print", symbol_print_string);
-
-  // println function for basic types
-  std::vector<std::shared_ptr<BasicType>> params_println_int{BasicType::getIntType()};
-  auto type_println_int = std::make_shared<FunctionType>(params_println_int, type_void);
-  Symbol symbol_println_int("println", Symbol::Kind::FUNCTION, type_println_int);
-  symbolTable->insert("println", symbol_println_int);
-
-  std::vector<std::shared_ptr<BasicType>> params_println_float{BasicType::getFloatType()};
-  auto type_println_float = std::make_shared<FunctionType>(params_println_float, type_void);
-  Symbol symbol_println_float("println", Symbol::Kind::FUNCTION, type_println_float);
-  symbolTable->insert("println", symbol_println_float);
-
-  std::vector<std::shared_ptr<BasicType>> params_println_bool{BasicType::getBoolType()};
-  auto type_println_bool = std::make_shared<FunctionType>(params_println_bool, type_void);
-  Symbol symbol_println_bool("println", Symbol::Kind::FUNCTION, type_println_bool);
-  symbolTable->insert("println", symbol_println_bool);
-
-  std::vector<std::shared_ptr<BasicType>> params_println_string{BasicType::getStringType()};
-  auto type_println_string = std::make_shared<FunctionType>(params_println_string, type_void);
-  Symbol symbol_println_string("println", Symbol::Kind::FUNCTION, type_println_string);
-  symbolTable->insert("println", symbol_println_string);
 }
 
 std::shared_ptr<Type> Semantic::tokenTypeToType(Token token) {

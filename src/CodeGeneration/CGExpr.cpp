@@ -1,3 +1,11 @@
+//=== src/CodeGeneration/CGExpr.cpp - Impl of CodeGeneration for Expressions --------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the methods of the CodeGeneration class used to generate code
+// for Expressions.
+//
+//===------------------------------------------------------------------------------------------===//
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 llvm::Value *CodeGeneration::generate(const std::shared_ptr<Expr> &node) {
@@ -12,6 +20,9 @@ llvm::Value *CodeGeneration::generate(const std::shared_ptr<Expr> &node) {
     return generate(std::static_pointer_cast<IdentExpr>(node));
   case Expr::Kind::CALLEXPR:
     return generate(std::static_pointer_cast<CallExpr>(node));
+  default:
+    reportError("Internal Error - Expression kind not allowed");
+    return nullptr;
   }
 }
 

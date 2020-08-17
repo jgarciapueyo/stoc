@@ -1,3 +1,16 @@
+//=== src/CodeGeneration/CodeGeneration.cpp - Impl of CodeGeneration class ----------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the general methods of the CodeGeneration class used to generate code
+// for Declarations, Statements and Expressions. The methods for generating LLVM IR for these nodes
+// in the AST can be found in CGDecl.cpp, CGStmt.cpp and CGExpr.cpp respectively.
+// CodeGeneration is the fourth, and last, phase of a compiler's frontend and the objective is to
+// transform the AST from previous phases into an intermediate representation, usually some form of
+// linearization of the AST that is closer to the target language. In this case, code generation
+// emits LLVM IR with the help of LLVM API.
+//
+//===------------------------------------------------------------------------------------------===//
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 #include <llvm/ADT/SmallVector.h>
@@ -157,8 +170,8 @@ void CodeGeneration::getExecutable() {
     llvm::errs() << ec;
   }
 
-  llvm::sys::fs::remove(tempFilenameBitcode);
-  llvm::sys::fs::remove(tempFilenameObject);
+  // llvm::sys::fs::remove(tempFilenameBitcode);
+  // llvm::sys::fs::remove(tempFilenameObject);
 }
 
 llvm::Type *CodeGeneration::getLLVMType(std::shared_ptr<Type> type) {

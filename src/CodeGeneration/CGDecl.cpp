@@ -1,4 +1,11 @@
-// TODO: add header
+//=== src/CodeGeneration/CGDecl.cpp - Impl of CodeGeneration for Declarations -------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the methods of the CodeGeneration class used to generate code
+// for Declarations.
+//
+//===------------------------------------------------------------------------------------------===//
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 #include <llvm/Transforms/Utils/ModuleUtils.h>

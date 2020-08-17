@@ -54,15 +54,13 @@ int tokenPrec(TokenType type) {
 }
 
 Token::Token(TokenType type, int begin, int line, int column, std::string value)
-    : tokenType(type), begin(begin), line(line), column(column), value(std::move(value)) {}
+    : tokenType(type), begin(begin), line(line), column(column), value(value) {}
 
 Token::Token(TokenType type, int begin, int line, int column)
     : tokenType(type), begin(begin), line(line), column(column) {}
 
-Token::Token() = default;
-
 std::ostream &operator<<(std::ostream &os, const Token &t) {
-  os << std::setw(5) << t.line << " " << std::setw(4) << t.column << " " << std::setw(10)
-     << t.value << " " << to_string(t.tokenType);
+  os << std::setw(5) << t.line << std::setw(4) << t.column << " " << std::setw(10) << t.value << " "
+     << std::setw(10) << to_string(t.tokenType);
   return os;
 }

@@ -1,11 +1,18 @@
-// TODO: add header of the file
+//===- stoc/SemanticAnalysis/Symbol.cpp - Defintion of Symbol class ------*- C++ -*-===//
+//
+//===-------------------------------------------------------------------------------===//
+//
+// This file defines the Symbol class used in to store information about declarations
+// in SymbolTable.
+//
+//===-------------------------------------------------------------------------------===//
 #ifndef STOC_SYMBOL_H
 #define STOC_SYMBOL_H
 
+#include <vector>
+
 #include "stoc/AST/Decl.h"
 #include "stoc/SemanticAnalysis/Type.h"
-
-#include <vector>
 
 /// Symbol that stores all the necessary information related to a symbol in the source code.
 ///  This information varies depending on the type of the symbol. For example:
@@ -25,6 +32,8 @@ private:
 
   std::shared_ptr<Type> type;
 
+  /// saves a reference to the declaration of this symbol. Used to bind declarations and usages
+  /// of identifiers in expressions
   std::shared_ptr<Decl> declReference;
 
 public:

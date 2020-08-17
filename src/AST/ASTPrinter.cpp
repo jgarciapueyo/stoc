@@ -112,8 +112,8 @@ void ASTPrinter::visit(std::shared_ptr<UnaryExpr> node) {
 
 void ASTPrinter::visit(std::shared_ptr<LiteralExpr> node) {
   std::cout << pre << "-LiteralExpr <l." << node->getToken().line << ":c."
-            << node->getToken().column << "> '" << node->getToken().value << "' "
-            << node->getToken().tokenType << " " << node->getType() << std::endl;
+            << node->getToken().column << "> " << node->getToken().tokenType
+            << " '" <<  node->getToken().value << "' " << node->getType() << std::endl;
 }
 
 void ASTPrinter::visit(std::shared_ptr<IdentExpr> node) {

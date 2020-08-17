@@ -1,3 +1,11 @@
+//=== src/CodeGeneration/CGStmt.cpp - Impl of CodeGeneration for Statements ---------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file implements the methods of the CodeGeneration class used to generate code
+// for Statements.
+//
+//===------------------------------------------------------------------------------------------===//
 #include "stoc/CodeGeneration/CodeGeneration.h"
 
 void CodeGeneration::generate(const std::shared_ptr<Stmt> &node) {
@@ -65,6 +73,12 @@ void CodeGeneration::generate(const std::shared_ptr<IfStmt> &node) {
       builder->CreateBr(mergeBB);
     }
 
+    // In addition to that block, we look at the current block we are inserting because maybe the
+    // node->getThenBranch() has generated other basic blocks
+    if (!builder->GetInsertBlock()->getTerminator()) {
+      builder->CreateBr(mergeBB);
+    }
+
     // Code generation for the else branch
     function->getBasicBlockList().push_back(elseBB);
     builder->SetInsertPoint(elseBB);
@@ -73,6 +87,12 @@ void CodeGeneration::generate(const std::shared_ptr<IfStmt> &node) {
     // If this BasicBlock has not been terminated (i.e with a return statement), an inconditional
     // branch to the continuation of the ifStmt is added
     if (!elseBB->getTerminator()) {
+      builder->CreateBr(mergeBB);
+    }
+
+    // In addition to that block, we look at the current block we are inserting because maybe the
+    // node->getElseBranch() has generated other basic blocks
+    if (!builder->GetInsertBlock()->getTerminator()) {
       builder->CreateBr(mergeBB);
     }
 

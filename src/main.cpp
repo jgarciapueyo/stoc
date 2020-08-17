@@ -1,4 +1,11 @@
-// TODO: add header of the file
+//=== src/main.cpp - main entry point for the stoc compiler -------------------------*- C++ -*-===//
+//
+//===------------------------------------------------------------------------------------------===//
+//
+// This file is the main entry point to the Stoc compiler. It reads the arguments and invokes the
+// modules for the different phases.
+//
+//===------------------------------------------------------------------------------------------===//
 #include <iostream>
 #include <string>
 
